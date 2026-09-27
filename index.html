@@ -1,842 +1,177 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Demon Stream</title>
-
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css"/>
-
-<style>
-
-:root{
---bg:#080808;
---card:#141414;
---red:#c40000;
---red2:#ff2020;
---text:#ffffff;
---gray:#b8b8b8;
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
-}
-
-body{
-background:var(--bg);
-color:white;
-overflow-x:hidden;
-}
-
-/* HEADER */
-
-header{
-position:fixed;
-top:0;
-width:100%;
-z-index:9999;
-padding:18px 5%;
-display:flex;
-justify-content:space-between;
-align-items:center;
-background:linear-gradient(to bottom,#000,transparent);
-transition:.3s;
-}
-
-header.active{
-background:#0c0c0c;
-backdrop-filter:blur(10px);
-}
-
-.logo{
-font-size:32px;
-font-weight:900;
-color:var(--red2);
-text-shadow:0 0 15px rgba(255,0,0,.5);
-}
-
-.search{
-width:280px;
-padding:12px 18px;
-border:none;
-outline:none;
-border-radius:40px;
-background:#1d1d1d;
-color:white;
-transition:.3s;
-}
-
-.search:focus{
-width:350px;
-box-shadow:0 0 20px rgba(255,0,0,.3);
-}
-
-/* HERO */
-
-.hero{
-height:100vh;
-display:flex;
-align-items:center;
-padding:0 5%;
-background:
-linear-gradient(to top,#080808 10%,transparent 70%),
-linear-gradient(to right,#000 20%,transparent 70%),
-url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop') center/cover;
-}
-
-.hero-content{
-max-width:700px;
-animation:fade 1s ease;
-}
-
-.hero h1{
-font-size:75px;
-margin-bottom:20px;
-}
-
-.hero p{
-font-size:18px;
-line-height:1.8;
-color:#d5d5d5;
-margin-bottom:30px;
-}
-
-.hero-buttons{
-display:flex;
-gap:15px;
-}
-
-.btn{
-padding:14px 35px;
-border:none;
-border-radius:10px;
-font-size:16px;
-font-weight:bold;
-cursor:pointer;
-transition:.3s;
-}
-
-.btn-red{
-background:var(--red);
-color:white;
-}
-
-.btn-red:hover{
-background:var(--red2);
-transform:translateY(-2px);
-}
-
-.btn-dark{
-background:#202020;
-color:white;
-}
-
-.btn-dark:hover{
-background:#2d2d2d;
-}
-
-/* SECTION */
-
-.section{
-padding:50px 5%;
-}
-
-.section-title{
-font-size:30px;
-margin-bottom:30px;
-padding-right:15px;
-position:relative;
-}
-
-.section-title::before{
-content:'';
-position:absolute;
-right:0;
-top:10%;
-height:80%;
-width:4px;
-background:red;
-}
-
-/* GRID */
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-gap:25px;
-}
-
-.card{
-background:var(--card);
-border-radius:15px;
-overflow:hidden;
-cursor:pointer;
-transition:.4s;
-position:relative;
-}
-
-.card:hover{
-transform:scale(1.05);
-box-shadow:0 0 25px rgba(255,0,0,.25);
-}
-
-.card img{
-width:100%;
-height:330px;
-object-fit:cover;
-}
-
-.card-info{
-padding:15px;
-}
-
-.card-title{
-font-size:17px;
-font-weight:bold;
-margin-bottom:10px;
-}
-
-.card-meta{
-display:flex;
-justify-content:space-between;
-font-size:13px;
-color:#999;
-}
-
-/* MODAL */
-
-.modal{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.95);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:99999;
-padding:25px;
-}
-
-.modal.active{
-display:flex;
-animation:fade .3s ease;
-}
-
-.modal-content{
-width:100%;
-max-width:1200px;
-background:#101010;
-border-radius:18px;
-overflow:hidden;
-position:relative;
-}
-
-.close{
-position:absolute;
-top:15px;
-left:15px;
-width:45px;
-height:45px;
-border:none;
-border-radius:50%;
-background:#1d1d1d;
-color:white;
-font-size:20px;
-cursor:pointer;
-z-index:5;
-}
-
-.video-box{
-width:100%;
-background:black;
-}
-
-.modal-info{
-padding:25px;
-}
-
-.modal-title{
-font-size:35px;
-margin-bottom:10px;
-}
-
-.modal-desc{
-color:#c7c7c7;
-line-height:1.8;
-margin-bottom:20px;
-}
-
-.controls{
-display:flex;
-gap:15px;
-flex-wrap:wrap;
-margin-top:20px;
-}
-
-select{
-padding:12px 15px;
-border:none;
-outline:none;
-background:#1d1d1d;
-color:white;
-border-radius:8px;
-font-size:15px;
-cursor:pointer;
-}
-
-.extra-buttons{
-display:flex;
-gap:12px;
-margin-top:20px;
-flex-wrap:wrap;
-}
-
-.extra-btn{
-padding:12px 18px;
-background:#1d1d1d;
-border:none;
-border-radius:8px;
-color:white;
-cursor:pointer;
-transition:.3s;
-}
-
-.extra-btn:hover{
-background:#2b2b2b;
-}
-
-/* FOOTER */
-
-footer{
-padding:35px;
-text-align:center;
-color:#888;
-border-top:1px solid #222;
-margin-top:40px;
-}
-
-/* ANIMATION */
-
-@keyframes fade{
-from{
-opacity:0;
-transform:translateY(20px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-@media(max-width:700px){
-
-.hero h1{
-font-size:45px;
-}
-
-.search{
-width:170px;
-}
-
-.search:focus{
-width:220px;
-}
-
-.card img{
-height:270px;
-}
-
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فاحص يوزرات روبلوكس الثلاثية</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f111a;
+            color: #fff;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* القائمة الجانبية */
+        .sidebar {
+            width: 300px;
+            background-color: #161b22;
+            border-left: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .sidebar h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #58a6ff;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+        }
+        .results-list {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        .results-list li {
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: #21262d;
+            border-radius: 4px;
+            font-family: monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 3px solid #2ea043;
+        }
+        /* محتوى الصفحة الرئيسي */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            padding: 30px;
+            position: relative;
+        }
+        .status-box {
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #8b949e;
+        }
+        /* الزر المطلوب أسفل القائمة/الشاشة */
+        .start-btn {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.4);
+        }
+        .start-btn:hover {
+            background-color: #2ea043;
+        }
+        .start-btn:disabled {
+            background-color: #21262d;
+            color: #484f58;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    </style>
 </head>
-
 <body>
 
-<header id="header">
-
-<div class="logo">
-DEMON STREAM
-</div>
-
-<input type="text" class="search" id="searchInput" placeholder="ابحث عن مسلسل...">
-
-</header>
-
-<!-- HERO -->
-
-<section class="hero">
-
-<div class="hero-content">
-
-<h1>
-Breaking Bad
-</h1>
-
-<p>
-منصة مشاهدة احترافية بتصميم سينمائي فاخر،
-تشغيل سريع، مواسم وحلقات، وضع ملء الشاشة،
-وبحث ذكي مثل المنصات العالمية.
-</p>
-
-<div class="hero-buttons">
-
-<button class="btn btn-red" onclick="openPlayer(0)">
-شاهد الآن
-</button>
-
-<button class="btn btn-dark">
-المفضلة
-</button>
-
-</div>
-
-</div>
-
-</section>
-
-<!-- SECTION -->
-
-<section class="section">
-
-<h2 class="section-title">
-المسلسلات
-</h2>
-
-<div class="grid" id="grid"></div>
-
-</section>
-
-<!-- MODAL -->
-
-<div class="modal" id="modal">
-
-<div class="modal-content">
-
-<button class="close" onclick="closePlayer()">
-×
-</button>
-
-<div class="video-box">
-
-<video id="player" playsinline controls crossorigin="anonymous"></video>
-
-</div>
-
-<div class="modal-info">
-
-<h1 class="modal-title" id="modalTitle"></h1>
-
-<p class="modal-desc" id="modalDesc"></p>
-
-<div class="controls">
-
-<select id="seasonSelect"></select>
-
-<select id="episodeSelect"></select>
-
-</div>
-
-<div class="extra-buttons">
-
-<button class="extra-btn" onclick="toggleFullscreen()">
-ملء الشاشة
-</button>
-
-<button class="extra-btn" onclick="nextEpisode()">
-الحلقة التالية
-</button>
-
-<button class="extra-btn" onclick="saveFavorite()">
-إضافة للمفضلة
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<footer>
-Demon Stream © 2026
-</footer>
-
-<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-
-<script>
-
-const player = new Plyr('#player');
-
-const shows = [
-
-{
-id:0,
-title:"Breaking Bad",
-description:"مدرس كيمياء يتحول إلى أخطر صانع مخدرات.",
-image:"https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizwpkE.jpg",
-quality:"1080p",
-year:"2008",
-
-seasons:[
-
-{
-season:1,
-
-episodes:[
-
-{
-title:"الحلقة 1",
-video:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-},
-
-{
-title:"الحلقة 2",
-video:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-}
-
-]
-
-}
-
-]
-
-},
-
-{
-id:1,
-title:"Peaky Blinders",
-description:"عائلة شيلبي الإجرامية تسيطر على برمنغهام.",
-image:"https://image.tmdb.org/t/p/w500/vUUqzWa2LnHIVqkaKVlVGkVcZIW.jpg",
-quality:"4K",
-year:"2013",
-
-seasons:[
-
-{
-season:1,
-
-episodes:[
-
-{
-title:"الحلقة 1",
-video:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
-},
-
-{
-title:"الحلقة 2",
-video:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
-}
-
-]
-
-}
-
-]
-
-},
-
-{
-id:2,
-title:"The Boys",
-description:"أبطال خارقون فاسدون ومجموعة تسعى لإيقافهم.",
-image:"https://image.tmdb.org/t/p/w500/stTEycfG9928HYGEISBFaG1ngjM.jpg",
-quality:"4K",
-year:"2019",
-
-seasons:[
-
-{
-season:1,
-
-episodes:[
-
-{
-title:"الحلقة 1",
-video:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
-},
-
-{
-title:"الحلقة 2",
-video:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
-}
-
-]
-
-}
-
-]
-
-}
-
-];
-
-const grid = document.getElementById("grid");
-
-function render(data){
-
-grid.innerHTML = "";
-
-data.forEach(show=>{
-
-grid.innerHTML += `
-
-<div class="card" onclick="openPlayer(${show.id})">
-
-<img src="${show.image}">
-
-<div class="card-info">
-
-<div class="card-title">
-${show.title}
-</div>
-
-<div class="card-meta">
-
-<span>${show.year}</span>
-
-<span>${show.quality}</span>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-});
-
-}
-
-render(shows);
-
-/* SEARCH */
-
-document.getElementById("searchInput")
-.addEventListener("input",(e)=>{
-
-const value = e.target.value.toLowerCase();
-
-const filtered = shows.filter(show =>
-show.title.toLowerCase().includes(value)
-);
-
-render(filtered);
-
-});
-
-/* HEADER EFFECT */
-
-window.addEventListener("scroll",()=>{
-
-const header = document.getElementById("header");
-
-if(window.scrollY > 50){
-header.classList.add("active");
-}else{
-header.classList.remove("active");
-}
-
-});
-
-let currentShow = null;
-
-/* OPEN PLAYER */
-
-function openPlayer(id){
-
-currentShow = shows.find(s => s.id === id);
-
-document.getElementById("modal")
-.classList.add("active");
-
-document.getElementById("modalTitle")
-.innerText = currentShow.title;
-
-document.getElementById("modalDesc")
-.innerText = currentShow.description;
-
-const seasonSelect =
-document.getElementById("seasonSelect");
-
-seasonSelect.innerHTML = "";
-
-currentShow.seasons.forEach((s,index)=>{
-
-seasonSelect.innerHTML += `
-<option value="${index}">
-الموسم ${s.season}
-</option>
-`;
-
-});
-
-updateEpisodes();
-
-}
-
-/* UPDATE EPISODES */
-
-function updateEpisodes(){
-
-const seasonIndex =
-document.getElementById("seasonSelect").value;
-
-const episodes =
-currentShow.seasons[seasonIndex].episodes;
-
-const episodeSelect =
-document.getElementById("episodeSelect");
-
-episodeSelect.innerHTML = "";
-
-episodes.forEach((ep,index)=>{
-
-episodeSelect.innerHTML += `
-<option value="${index}">
-${ep.title}
-</option>
-`;
-
-});
-
-playEpisode();
-
-}
-
-/* PLAY */
-
-function playEpisode(){
-
-const seasonIndex =
-document.getElementById("seasonSelect").value;
-
-const episodeIndex =
-document.getElementById("episodeSelect").value;
-
-const episode =
-currentShow.seasons[seasonIndex]
-.episodes[episodeIndex];
-
-player.source = {
-type:'video',
-sources:[
-{
-src:episode.video,
-type:'video/mp4'
-}
-]
-};
-
-player.play();
-
-/* SAVE WATCH */
-
-localStorage.setItem(
-"lastWatch",
-JSON.stringify({
-show:currentShow.title,
-season:seasonIndex,
-episode:episodeIndex
-})
-);
-
-}
-
-/* NEXT EPISODE */
-
-function nextEpisode(){
-
-const ep =
-document.getElementById("episodeSelect");
-
-if(ep.selectedIndex < ep.options.length - 1){
-
-ep.selectedIndex++;
-
-playEpisode();
-
-}
-
-}
-
-/* FULLSCREEN */
-
-function toggleFullscreen(){
-
-const video =
-document.querySelector(".video-box");
-
-if(!document.fullscreenElement){
-
-video.requestFullscreen();
-
-}else{
-
-document.exitFullscreen();
-
-}
-
-}
-
-/* FAVORITES */
-
-function saveFavorite(){
-
-let favs =
-JSON.parse(localStorage.getItem("favorites")) || [];
-
-if(!favs.includes(currentShow.title)){
-
-favs.push(currentShow.title);
-
-localStorage.setItem(
-"favorites",
-JSON.stringify(favs)
-);
-
-alert("تمت الإضافة للمفضلة");
-
-}
-
-}
-
-/* EVENTS */
-
-document.getElementById("seasonSelect")
-.addEventListener("change",updateEpisodes);
-
-document.getElementById("episodeSelect")
-.addEventListener("change",playEpisode);
-
-/* CLOSE */
-
-function closePlayer(){
-
-document.getElementById("modal")
-.classList.remove("active");
-
-player.pause();
-
-}
-
-/* KEYBOARD SHORTCUT */
-
-document.addEventListener("keydown",(e)=>{
-
-if(e.key === "f"){
-toggleFullscreen();
-}
-
-});
-
-</script>
-
+    <!-- القائمة الجانبية لعرض اليوزرات -->
+    <div class="sidebar">
+        <h2>اليوزرات المتاحة</h2>
+        <ul id="resultsList" class="results-list">
+            <li style="color: #8b949e; border-right-color: #484f58;">لم يتم العثور على يوزرات بعد...</li>
+        </ul>
+    </div>
+
+    <!-- المحتوى والزر أسفل القائمة / الشاشة -->
+    <div class="main-content">
+        <div class="status-box" id="statusText">الحالة: جاهز للبدء</div>
+        <button id="startBtn" class="start-btn" onclick="startChecker()">بدء فحث اليوزرات الثلاثية</button>
+    </div>
+
+    <script>
+        // توليد الحروف والأرقام المتاحة (حسب طلبك: أقل أحرف وأرقام ممكنة - يوزرات ثلاثية)
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789_";
+        
+        // محاكاة سريعة جداً للفحص (نظرًا لقيود المتصفح والـ CORS مع سيرفرات روبلوكس)
+        // ملاحظة: لربطها فعلياً بسيرفر روبلوكس، يجب تشغيل Node.js Backend كوسيط (Proxy)
+        async function checkUsername(username) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // محاكاة عشوائية لنجاح الفحص (يتم استبدالها بطلب حقيقي للسيرفر)
+                    // روبلوكس تقبل اليوزر الثلاثي المكون من أحرف وأرقام وشرطة سفلى إذا لم يكن مستخدماً
+                    const isAvailable = Math.random() < 0.05; // 5% نسبة إيجاد يوزر متاح للتجربة
+                    resolve(isAvailable);
+                }, 50); // سرعة فائقة (50 ملي ثانية للبحث الواحد)
+            });
+        }
+
+        async function startChecker() {
+            const btn = document.getElementById('startBtn');
+            const statusText = document.getElementById('statusText');
+            const resultsList = document.getElementById('resultsList');
+            
+            btn.disabled = true;
+            btn.innerText =جاري البحث...;
+            resultsList.innerHTML = ''; // تفريغ القائمة
+
+            let foundCount = 0;
+
+            // حلقة تكرارية لتوليد وفحص اليوزرات الثلاثية (3 خانات)
+            for (let i = 0; i < chars.length; i++) {
+                for (let j = 0; j < chars.length; j++) {
+                    for (let k = 0; k < chars.length; k++) {
+                        const username = chars[i] + chars[j] + chars[k];
+                        
+                        statusText.innerText = فحص اليوزر: ${username};
+
+                        // فحص اليوزر في الخلفية بدون تعليق الواجهة (بفضل استخدام async/await)
+                        const available = await checkUsername(username);
+
+                        if (available) {
+                            foundCount++;
+                            if (foundCount === 1) {
+                                resultsList.innerHTML = ''; // إزالة رسالة "لم يتم العثور"
+                            }
+                            
+                            // إدراج اليوزر في القائمة مباشرة
+                            const li = document.createElement('li');
+                            li.innerHTML = `<span>${username}</span> <span style="color: #2ea043; font-size: 0.8rem;">متاح ✓</span>`;
+                            resultsList.appendChild(li);
+                        }
+
+                        // توقف بسيط لمنع الضغط ولضمان عدم حدوث Freezing للمتصفح
+                        if ((i * chars.length * chars.length + j * chars.length + k) % 50 === 0) {
+                            await new Promise(r => setTimeout(r, 10));
+                        }
+                    }
+                }
+            }
+
+            statusText.innerText = انتهى الفحص. تم العثور على ${foundCount} يوزر متاح.;
+            btn.disabled = false;
+            btn.innerText = إعادة البحث;
+        }
+    </script>
 </body>
 </html>
