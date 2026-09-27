@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فاحص اليوزرات الثلاثية - مع نافذة Output</title>
+    <title>فاحص اليوزرات الثلاثية - مع ميزة النسخ</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,7 +20,7 @@
         }
         /* القائمة الجانبية */
         .sidebar {
-            width: 300px;
+            width: 350px;
             background-color: #161b22;
             border-left: 1px solid #30363d;
             display: flex;
@@ -46,15 +46,47 @@
         }
         .results-list li {
             padding: 8px 12px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             background: #21262d;
             border-radius: 4px;
-            font-family: monospace;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-right: 3px solid #2ea043;
         }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .username-text {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .status-badge {
+            color: #2ea043;
+            font-size: 0.75rem;
+            background: rgba(46, 160, 67, 0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        /* زر النسخ */
+        .copy-btn {
+            background-color: #30363d;
+            color: #c9d1d9;
+            border: 1px solid #484f58;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #8b949e;
+            color: #0d1117;
+        }
+        
         /* محتوى الصفحة الرئيسي */
         .main-content {
             flex: 1;
@@ -139,30 +171,26 @@
 </head>
 <body>
 
-    <!-- القائمة الجانبية -->
     <div class="sidebar">
-        <h2>اليوزرات المتاحة</h2>
+        <h2>اليوزرات المتاحة للتسجيل</h2>
         <ul id="resultsList" class="results-list">
-            <li id="noResults" style="color: #8b949e; border-right-color: #484f58;">القائمة فارغة...</li>
+            <li id="noResults" style="color: #8b949e; border-right-color: #484f58; justify-content: center;">القائمة فارغة...</li>
         </ul>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="main-content">
-        <!-- لوحة التحكم -->
         <div class="controls">
             <div class="status-box" id="statusText">جاهز للبدء...</div>
             <button id="startBtn" class="start-btn" onclick="startChecker()">بدء البحث</button>
         </div>
 
-        <!-- نافذة Output -->
         <div class="output-container">
             <div class="output-header">
                 <span>Output Console</span>
                 <span id="speedIndicator" style="color: #58a6ff;">السرعة: فائقة</span>
             </div>
             <div class="output-log" id="outputLog">
-                <div class="log-entry"><span class="log-time">[System]</span> تم تهيئة النظام بنجاح. في انتظار بدء الفحص.</div>
+                <div class="log-entry"><span class="log-time">[System]</span> تم تهيئة الواجهة. وجاهز للربط بالخوادم.</div>
             </div>
         </div>
     </div>
@@ -171,7 +199,6 @@
         const chars = "abcdefghijklmnopqrstuvwxyz0123456789_";
         let isRunning = false;
         
-        // دالة لكتابة السجلات في نافذة Output
         function printLog(message, isSuccess = false) {
             const outputLog = document.getElementById('outputLog');
             const time = new Date().toLocaleTimeString('ar-SA');
@@ -181,19 +208,36 @@
             logElement.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
             
             outputLog.appendChild(logElement);
-            
-            // التمرير التلقائي للأسفل
             outputLog.scrollTop = outputLog.scrollHeight;
         }
 
-        // محاكاة الفحص (بدون تعليق)
+        // دالة نسخ اليوزر إلى الحافظة
+        function copyUsername(btnElement, username) {
+            navigator.clipboard.writeText(username).then(() => {
+                const originalText = btnElement.innerText;
+                const originalBg = btnElement.style.backgroundColor;
+                const originalColor = btnElement.style.color;
+
+                btnElement.innerText = 'تم النسخ!';
+                btnElement.style.backgroundColor = '#2ea043';
+                btnElement.style.color = '#fff';
+
+                setTimeout(() => {
+                    btnElement.innerText = originalText;
+                    btnElement.style.backgroundColor = originalBg;
+                    btnElement.style.color = originalColor;
+                }, 1500);
+            }).catch(err => {
+                console.error('فشل النسخ: ', err);
+            });
+        }
+
         async function checkUsername(username) {
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    // نسبة 1% كنجاح وهمي للتجربة في الواجهة
                     const isAvailable = Math.random() < 0.01; 
                     resolve(isAvailable);
-                }, 10); // تقليل وقت الانتظار لتسريع المحاكاة
+                }, 10);
             });
         }
 
@@ -226,15 +270,19 @@
 
                         if (available) {
                             foundCount++;
-                            printLog(`[Success] تم العثور على يوزر متاح: ${username}`, true);
+                            printLog(`[Success] تم العثور على يوزر: ${username}`, true);
                             
-                            // إدراج اليوزر في القائمة الجانبية
                             const li = document.createElement('li');
-                            li.innerHTML = `<span>${username}</span> <span style="color: #2ea043; font-size: 0.8rem;">متاح ✓</span>`;
-                            resultsList.prepend(li); // إضافته في أعلى القائمة
+                            li.innerHTML = `
+                                <div class="user-info">
+                                    <span class="username-text">${username}</span>
+                                    <span class="status-badge">متاح ✓</span>
+                                </div>
+                                <button class="copy-btn" onclick="copyUsername(this, '${username}')">نسخ</button>
+                            `;
+                            resultsList.prepend(li);
                         }
 
-                        // توقف بسيط لتخفيف الضغط والسماح للـ Output بالتحديث بدون تعليق
                         if ((i * chars.length * chars.length + j * chars.length + k) % 25 === 0) {
                             await new Promise(r => setTimeout(r, 0));
                         }
@@ -242,7 +290,7 @@
                 }
             }
 
-            statusText.innerText = `انتهى الفحص. تم العثور على ${foundCount} يوزر متاح.`;
+            statusText.innerText = `انتهى الفحص. تم العثور على ${foundCount} يوزر.`;
             printLog(`تم إيقاف الفحص. الإجمالي المتاح: ${foundCount}`);
             
             btn.disabled = false;
