@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فاحص يوزرات روبلوكس الثلاثية</title>
+    <title>فاحص اليوزرات الثلاثية - مع نافذة Output</title>
     <style>
         * {
             box-sizing: border-box;
@@ -26,6 +26,7 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
+            z-index: 2;
         }
         .sidebar h2 {
             font-size: 1.2rem;
@@ -59,17 +60,23 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            align-items: flex-end;
-            padding: 30px;
-            position: relative;
+            padding: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #161b22;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
         }
         .status-box {
-            margin-bottom: 15px;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             color: #8b949e;
+            font-family: monospace;
         }
-        /* الزر المطلوب أسفل القائمة/الشاشة */
         .start-btn {
             background-color: #238636;
             color: white;
@@ -91,38 +98,102 @@
             cursor: not-allowed;
             box-shadow: none;
         }
+        /* نافذة المخرجات (Output Console) */
+        .output-container {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .output-header {
+            background: #161b22;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            color: #8b949e;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+        }
+        .output-log {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #c9d1d9;
+        }
+        .log-entry {
+            margin-bottom: 4px;
+        }
+        .log-time {
+            color: #8b949e;
+            margin-left: 10px;
+        }
+        .log-success {
+            color: #3fb950;
+        }
     </style>
 </head>
 <body>
 
-    <!-- القائمة الجانبية لعرض اليوزرات -->
+    <!-- القائمة الجانبية -->
     <div class="sidebar">
         <h2>اليوزرات المتاحة</h2>
         <ul id="resultsList" class="results-list">
-            <li style="color: #8b949e; border-right-color: #484f58;">لم يتم العثور على يوزرات بعد...</li>
+            <li id="noResults" style="color: #8b949e; border-right-color: #484f58;">القائمة فارغة...</li>
         </ul>
     </div>
 
-    <!-- المحتوى والزر أسفل القائمة / الشاشة -->
+    <!-- المحتوى الرئيسي -->
     <div class="main-content">
-        <div class="status-box" id="statusText">الحالة: جاهز للبدء</div>
-        <button id="startBtn" class="start-btn" onclick="startChecker()">بدء فحث اليوزرات الثلاثية</button>
+        <!-- لوحة التحكم -->
+        <div class="controls">
+            <div class="status-box" id="statusText">جاهز للبدء...</div>
+            <button id="startBtn" class="start-btn" onclick="startChecker()">بدء البحث</button>
+        </div>
+
+        <!-- نافذة Output -->
+        <div class="output-container">
+            <div class="output-header">
+                <span>Output Console</span>
+                <span id="speedIndicator" style="color: #58a6ff;">السرعة: فائقة</span>
+            </div>
+            <div class="output-log" id="outputLog">
+                <div class="log-entry"><span class="log-time">[System]</span> تم تهيئة النظام بنجاح. في انتظار بدء الفحص.</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // توليد الحروف والأرقام المتاحة (حسب طلبك: أقل أحرف وأرقام ممكنة - يوزرات ثلاثية)
         const chars = "abcdefghijklmnopqrstuvwxyz0123456789_";
+        let isRunning = false;
         
-        // محاكاة سريعة جداً للفحص (نظرًا لقيود المتصفح والـ CORS مع سيرفرات روبلوكس)
-        // ملاحظة: لربطها فعلياً بسيرفر روبلوكس، يجب تشغيل Node.js Backend كوسيط (Proxy)
+        // دالة لكتابة السجلات في نافذة Output
+        function printLog(message, isSuccess = false) {
+            const outputLog = document.getElementById('outputLog');
+            const time = new Date().toLocaleTimeString('ar-SA');
+            
+            const logElement = document.createElement('div');
+            logElement.className = 'log-entry' + (isSuccess ? ' log-success' : '');
+            logElement.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            
+            outputLog.appendChild(logElement);
+            
+            // التمرير التلقائي للأسفل
+            outputLog.scrollTop = outputLog.scrollHeight;
+        }
+
+        // محاكاة الفحص (بدون تعليق)
         async function checkUsername(username) {
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    // محاكاة عشوائية لنجاح الفحص (يتم استبدالها بطلب حقيقي للسيرفر)
-                    // روبلوكس تقبل اليوزر الثلاثي المكون من أحرف وأرقام وشرطة سفلى إذا لم يكن مستخدماً
-                    const isAvailable = Math.random() < 0.05; // 5% نسبة إيجاد يوزر متاح للتجربة
+                    // نسبة 1% كنجاح وهمي للتجربة في الواجهة
+                    const isAvailable = Math.random() < 0.01; 
                     resolve(isAvailable);
-                }, 50); // سرعة فائقة (50 ملي ثانية للبحث الواحد)
+                }, 10); // تقليل وقت الانتظار لتسريع المحاكاة
             });
         }
 
@@ -130,47 +201,53 @@
             const btn = document.getElementById('startBtn');
             const statusText = document.getElementById('statusText');
             const resultsList = document.getElementById('resultsList');
+            const noResults = document.getElementById('noResults');
             
+            if (isRunning) return;
+            isRunning = true;
+
             btn.disabled = true;
-            btn.innerText =جاري البحث...;
-            resultsList.innerHTML = ''; // تفريغ القائمة
+            btn.innerText = 'جاري البحث...';
+            
+            if (noResults) noResults.style.display = 'none';
 
             let foundCount = 0;
+            printLog("بدء تشغيل خوارزمية الفحص الثلاثي...");
 
-            // حلقة تكرارية لتوليد وفحص اليوزرات الثلاثية (3 خانات)
             for (let i = 0; i < chars.length; i++) {
                 for (let j = 0; j < chars.length; j++) {
                     for (let k = 0; k < chars.length; k++) {
                         const username = chars[i] + chars[j] + chars[k];
                         
-                        statusText.innerText = فحص اليوزر: ${username};
+                        statusText.innerText = `فحص اليوزر: ${username}`;
+                        printLog(`[Check] جاري فحص: ${username}`);
 
-                        // فحص اليوزر في الخلفية بدون تعليق الواجهة (بفضل استخدام async/await)
                         const available = await checkUsername(username);
 
                         if (available) {
                             foundCount++;
-                            if (foundCount === 1) {
-                                resultsList.innerHTML = ''; // إزالة رسالة "لم يتم العثور"
-                            }
+                            printLog(`[Success] تم العثور على يوزر متاح: ${username}`, true);
                             
-                            // إدراج اليوزر في القائمة مباشرة
+                            // إدراج اليوزر في القائمة الجانبية
                             const li = document.createElement('li');
                             li.innerHTML = `<span>${username}</span> <span style="color: #2ea043; font-size: 0.8rem;">متاح ✓</span>`;
-                            resultsList.appendChild(li);
+                            resultsList.prepend(li); // إضافته في أعلى القائمة
                         }
 
-                        // توقف بسيط لمنع الضغط ولضمان عدم حدوث Freezing للمتصفح
-                        if ((i * chars.length * chars.length + j * chars.length + k) % 50 === 0) {
-                            await new Promise(r => setTimeout(r, 10));
+                        // توقف بسيط لتخفيف الضغط والسماح للـ Output بالتحديث بدون تعليق
+                        if ((i * chars.length * chars.length + j * chars.length + k) % 25 === 0) {
+                            await new Promise(r => setTimeout(r, 0));
                         }
                     }
                 }
             }
 
-            statusText.innerText = انتهى الفحص. تم العثور على ${foundCount} يوزر متاح.;
+            statusText.innerText = `انتهى الفحص. تم العثور على ${foundCount} يوزر متاح.`;
+            printLog(`تم إيقاف الفحص. الإجمالي المتاح: ${foundCount}`);
+            
             btn.disabled = false;
-            btn.innerText = إعادة البحث;
+            btn.innerText = 'إعادة البحث';
+            isRunning = false;
         }
     </script>
 </body>
