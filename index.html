@@ -1,302 +1,89 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فاحص اليوزرات الثلاثية - مع ميزة النسخ</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #0f111a;
-            color: #fff;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-        /* القائمة الجانبية */
-        .sidebar {
-            width: 350px;
-            background-color: #161b22;
-            border-left: 1px solid #30363d;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            z-index: 2;
-        }
-        .sidebar h2 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #58a6ff;
-            border-bottom: 1px solid #30363d;
-            padding-bottom: 10px;
-        }
-        .results-list {
-            flex: 1;
-            overflow-y: auto;
-            list-style: none;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 10px;
-        }
-        .results-list li {
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            background: #21262d;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-right: 3px solid #2ea043;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .username-text {
-            font-family: monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-        .status-badge {
-            color: #2ea043;
-            font-size: 0.75rem;
-            background: rgba(46, 160, 67, 0.1);
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
-        /* زر النسخ */
-        .copy-btn {
-            background-color: #30363d;
-            color: #c9d1d9;
-            border: 1px solid #484f58;
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover {
-            background-color: #8b949e;
-            color: #0d1117;
-        }
-        
-        /* محتوى الصفحة الرئيسي */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            background: #161b22;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #30363d;
-        }
-        .status-box {
-            font-size: 1.1rem;
-            color: #8b949e;
-            font-family: monospace;
-        }
-        .start-btn {
-            background-color: #238636;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.4);
-        }
-        .start-btn:hover {
-            background-color: #2ea043;
-        }
-        .start-btn:disabled {
-            background-color: #21262d;
-            color: #484f58;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        /* نافذة المخرجات (Output Console) */
-        .output-container {
-            flex: 1;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .output-header {
-            background: #161b22;
-            padding: 10px 15px;
-            font-size: 0.9rem;
-            color: #8b949e;
-            border-bottom: 1px solid #30363d;
-            display: flex;
-            justify-content: space-between;
-        }
-        .output-log {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-            color: #c9d1d9;
-        }
-        .log-entry {
-            margin-bottom: 4px;
-        }
-        .log-time {
-            color: #8b949e;
-            margin-left: 10px;
-        }
-        .log-success {
-            color: #3fb950;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>صيّاد اليوزرات</title>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e1116;--panel:#171b23;--line:#262c38;--ink:#e8ecf3;--mute:#8a94a7;--hit:#3ddc97;--warn:#f5b84b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Readex Pro',system-ui,sans-serif;min-height:100vh}
+main{max-width:760px;margin:0 auto;padding:48px 20px 80px}
+h1{font-size:clamp(2rem,6vw,3.2rem);margin:0 0 8px;font-weight:700;letter-spacing:-.5px}
+.sub{color:var(--mute);margin:0 0 32px}
+.platforms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.platforms button{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:14px 6px;border-radius:10px;font:inherit;cursor:pointer}
+.platforms button[aria-pressed=true]{border-color:var(--hit);box-shadow:inset 0 0 0 1px var(--hit)}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+select{background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:12px;border-radius:10px;font:inherit}
+.go{flex:1;min-width:160px;background:var(--hit);color:#05261a;border:0;padding:14px 20px;border-radius:10px;font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer}
+.go:disabled{opacity:.6;cursor:wait}
+button:focus-visible,select:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
+.note{font-size:.85rem;color:var(--warn);min-height:1.3em;margin:0 0 12px}
+ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+li{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+li code{font-family:'JetBrains Mono',monospace;font-size:1.1rem;direction:ltr}
+li button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
+li button.done{border-color:var(--hit);color:var(--hit)}
+.empty{color:var(--mute);padding:20px 0}
+.stat{margin-top:28px;color:var(--mute);font-size:.85rem}
+@media(max-width:520px){.platforms{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
 <body>
+<main>
+  <h1>صيّاد اليوزرات</h1>
+  <p class="sub">نظام يصيد يوزرات متاحة بالخلفية طول الوقت. تضغط بحث وتاخذها جاهزة.</p>
 
-    <div class="sidebar">
-        <h2>اليوزرات المتاحة للتسجيل</h2>
-        <ul id="resultsList" class="results-list">
-            <li id="noResults" style="color: #8b949e; border-right-color: #484f58; justify-content: center;">القائمة فارغة...</li>
-        </ul>
-    </div>
+  <div class="platforms" id="plats">
+    <button data-p="roblox" aria-pressed="true">روبلوكس</button>
+    <button data-p="discord" aria-pressed="false">ديسكورد</button>
+    <button data-p="instagram" aria-pressed="false">انستقرام</button>
+    <button data-p="tiktok" aria-pressed="false">تيك توك</button>
+  </div>
 
-    <div class="main-content">
-        <div class="controls">
-            <div class="status-box" id="statusText">جاهز للبدء...</div>
-            <button id="startBtn" class="start-btn" onclick="startChecker()">بدء البحث</button>
-        </div>
-
-        <div class="output-container">
-            <div class="output-header">
-                <span>Output Console</span>
-                <span id="speedIndicator" style="color: #58a6ff;">السرعة: فائقة</span>
-            </div>
-            <div class="output-log" id="outputLog">
-                <div class="log-entry"><span class="log-time">[System]</span> تم تهيئة الواجهة. وجاهز للربط بالخوادم.</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const chars = "abcdefghijklmnopqrstuvwxyz0123456789_";
-        let isRunning = false;
-        
-        function printLog(message, isSuccess = false) {
-            const outputLog = document.getElementById('outputLog');
-            const time = new Date().toLocaleTimeString('ar-SA');
-            
-            const logElement = document.createElement('div');
-            logElement.className = 'log-entry' + (isSuccess ? ' log-success' : '');
-            logElement.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
-            
-            outputLog.appendChild(logElement);
-            outputLog.scrollTop = outputLog.scrollHeight;
-        }
-
-        // دالة نسخ اليوزر إلى الحافظة
-        function copyUsername(btnElement, username) {
-            navigator.clipboard.writeText(username).then(() => {
-                const originalText = btnElement.innerText;
-                const originalBg = btnElement.style.backgroundColor;
-                const originalColor = btnElement.style.color;
-
-                btnElement.innerText = 'تم النسخ!';
-                btnElement.style.backgroundColor = '#2ea043';
-                btnElement.style.color = '#fff';
-
-                setTimeout(() => {
-                    btnElement.innerText = originalText;
-                    btnElement.style.backgroundColor = originalBg;
-                    btnElement.style.color = originalColor;
-                }, 1500);
-            }).catch(err => {
-                console.error('فشل النسخ: ', err);
-            });
-        }
-
-        async function checkUsername(username) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const isAvailable = Math.random() < 0.01; 
-                    resolve(isAvailable);
-                }, 10);
-            });
-        }
-
-        async function startChecker() {
-            const btn = document.getElementById('startBtn');
-            const statusText = document.getElementById('statusText');
-            const resultsList = document.getElementById('resultsList');
-            const noResults = document.getElementById('noResults');
-            
-            if (isRunning) return;
-            isRunning = true;
-
-            btn.disabled = true;
-            btn.innerText = 'جاري البحث...';
-            
-            if (noResults) noResults.style.display = 'none';
-
-            let foundCount = 0;
-            printLog("بدء تشغيل خوارزمية الفحص الثلاثي...");
-
-            for (let i = 0; i < chars.length; i++) {
-                for (let j = 0; j < chars.length; j++) {
-                    for (let k = 0; k < chars.length; k++) {
-                        const username = chars[i] + chars[j] + chars[k];
-                        
-                        statusText.innerText = `فحص اليوزر: ${username}`;
-                        printLog(`[Check] جاري فحص: ${username}`);
-
-                        const available = await checkUsername(username);
-
-                        if (available) {
-                            foundCount++;
-                            printLog(`[Success] تم العثور على يوزر: ${username}`, true);
-                            
-                            const li = document.createElement('li');
-                            li.innerHTML = `
-                                <div class="user-info">
-                                    <span class="username-text">${username}</span>
-                                    <span class="status-badge">متاح ✓</span>
-                                </div>
-                                <button class="copy-btn" onclick="copyUsername(this, '${username}')">نسخ</button>
-                            `;
-                            resultsList.prepend(li);
-                        }
-
-                        if ((i * chars.length * chars.length + j * chars.length + k) % 25 === 0) {
-                            await new Promise(r => setTimeout(r, 0));
-                        }
-                    }
-                }
-            }
-
-            statusText.innerText = `انتهى الفحص. تم العثور على ${foundCount} يوزر.`;
-            printLog(`تم إيقاف الفحص. الإجمالي المتاح: ${foundCount}`);
-            
-            btn.disabled = false;
-            btn.innerText = 'إعادة البحث';
-            isRunning = false;
-        }
-    </script>
+  <div class="row">
+    <select id="len" aria-label="طول اليوزر">
+      <option value="0">أي طول</option><option>4</option><option>5</option><option>6</option><option>7</option>
+    </select>
+    <button class="go" id="go">بحث</button>
+  </div>
+  <p class="note" id="note"></p>
+  <ul id="out"></ul>
+  <p class="stat" id="stat"></p>
+</main>
+<script>
+// ضع رابط الباك اند هنا بعد ما ترفعه (بدون / بالاخر)
+const API_BASE='https://YOUR-BACKEND.onrender.com';
+let platform='roblox';
+const $=s=>document.querySelector(s);
+const notes={roblox:'',discord:'ديسكورد ما يوفر فحص عام: اليوزرات هنا غير مؤكدة، جرّبها يدويا.',instagram:'الفحص تقريبي: تأكد قبل التسجيل.',tiktok:'الفحص تقريبي: تأكد قبل التسجيل.'};
+$('#plats').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  platform=b.dataset.p;
+  document.querySelectorAll('#plats button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('#note').textContent=notes[platform]; $('#out').innerHTML='';
+});
+$('#go').onclick=async()=>{
+  const btn=$('#go'); btn.disabled=true; btn.textContent='جاري البحث...';
+  try{
+    const r=await fetch(`${API_BASE}/api/search?platform=${platform}&length=${$('#len').value}&count=10`);
+    const j=await r.json();
+    if(j.error){$('#out').innerHTML=`<p class="empty">${j.error}</p>`;return;}
+    const ul=$('#out'); ul.innerHTML='';
+    if(!j.results.length){ul.innerHTML='<p class="empty">المخزون فاضي حاليا، النظام يصيد. جرّب بعد ثواني.</p>';}
+    j.results.forEach(x=>{
+      const li=document.createElement('li');
+      li.innerHTML=`<code>${x.name}</code><button>نسخ</button>`;
+      const b=li.querySelector('button');
+      b.onclick=()=>{navigator.clipboard.writeText(x.name);b.textContent='تم النسخ';b.classList.add('done')};
+      ul.appendChild(li);
+    });
+    $('#stat').textContent=`المتبقي جاهز في المخزون: ${j.remaining}`;
+  }catch{ $('#out').innerHTML='<p class="empty">تعذر الاتصال بالخادم.</p>'; }
+  finally{btn.disabled=false;btn.textContent='بحث';}
+};
+</script>
 </body>
 </html>
