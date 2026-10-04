@@ -299,6 +299,7 @@ function loadEngine(){
     showEng('المرحلة 1: تجهيز ذكاء سريع (أول مرة بس يحمّل الملفات)...',0);
     engine=await webllm.CreateMLCEngine(id,{initProgressCallback:p=>{if((p.progress||0)>lastP){lastP=p.progress;lastT=Date.now()}showEng('المرحلة 1: '+(p.text||'جاري التحميل...'),p.progress||0)}});
     if(S){S.data.cfg.ready=true;persist()}hideEng();$('#est').textContent='الذكاء جاهز ✓';
+    engine.chat.completions.create({messages:[{role:'user',content:'hi'}],max_tokens:1}).catch(()=>{});
     setTimeout(flushPending,300);
     if(!manual&&E.best.id!==id)setTimeout(()=>upgrade(E.best),2000);
     return engine;
@@ -310,6 +311,7 @@ async function upgrade(best){
   try{
     const set=t=>{$('#est').textContent=t};set(`يطوّر ذكاءه إلى ${best.b}B...`);
     const big=await webllm.CreateMLCEngine(best.id,{initProgressCallback:p=>set(`يطوّر ذكاءه إلى ${best.b}B: ${Math.round((p.progress||0)*100)}%`)});
+    await big.chat.completions.create({messages:[{role:'user',content:'hi'}],max_tokens:1}).catch(()=>{});
     while(busy)await sleep(1000);
     const old=engine;engine=big;try{await old.unload()}catch{}
     set(`الذكاء جاهز ✓ (${best.b}B)`);
@@ -343,27 +345,28 @@ async function addKB(docs){
 }
 
 /* ===== مصادر البحث والدراسة (كلها تسمح بالاتصال من المتصفح) ===== */
-const jget=async(u,ms=8000)=>{const r=await fetch(u,{signal:AbortSignal.timeout(ms)});if(!r.ok)throw Error(r.status);return r.json()};
+const jget=async(u,ms=8000,sg)=>{const t=AbortSignal.timeout(ms),r=await fetch(u,{signal:sg&&AbortSignal.any?AbortSignal.any([t,sg]):(sg||t)});if(!r.ok)throw Error(r.status);return r.json()};
+const jgs=(sg,u)=>jget(u,8000,sg);
 const strip=h=>String(h).replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim();
 const wp=(l,p)=>`https://${l}.wikipedia.org/w/api.php?format=json&origin=*&${p}`;
 function wpDocs(l,j,ids){const pg=j.query?.pages||{};return(ids?ids.map(i=>pg[i]):Object.values(pg)).filter(p=>p&&p.extract&&p.extract.length>40).map(p=>({id:`w:${l}:${p.pageid}`,title:p.title,text:p.extract.replace(/\s+/g,' ').trim(),src:`https://${l}.wikipedia.org/?curid=${p.pageid}`,ts:Date.now()}))}
-async function wikiSearch(q,l,n=3){
-  const s=await jget(wp(l,`action=query&list=search&srlimit=${n}&srsearch=${encodeURIComponent(q)}`)),ids=(s.query?.search||[]).map(x=>x.pageid);
-  if(!ids.length)return[];
-  return wpDocs(l,await jget(wp(l,`action=query&prop=extracts&exintro=1&explaintext=1&exchars=900&exlimit=max&pageids=${ids.join('|')}`)),ids);
+async function wikiSearch(q,l,n=3,sg){
+  const j=await jgs(sg,wp(l,`action=query&generator=search&gsrlimit=${n}&gsrsearch=${encodeURIComponent(q)}&prop=extracts&exintro=1&explaintext=1&exchars=900&exlimit=max`)),
+  pg=Object.values(j.query?.pages||{}).sort((a,b)=>(a.index||99)-(b.index||99));
+  return wpDocs(l,{query:{pages:Object.fromEntries(pg.map(x=>[x.pageid,x]))}},pg.map(x=>x.pageid));
 }
-const wikiRandom=async l=>wpDocs(l,await jget(wp(l,'action=query&generator=random&grnnamespace=0&grnlimit=10&prop=extracts&exintro=1&explaintext=1&exchars=700&exlimit=max')));
-async function itn(){
+const wikiRandom=async(l,sg)=>wpDocs(l,await jgs(sg,wp(l,'action=query&generator=random&grnnamespace=0&grnlimit=10&prop=extracts&exintro=1&explaintext=1&exchars=700&exlimit=max')));
+async function itn(sg){
   const d=new Date(Date.now()-(Math.random()<.5?0:864e5)),p=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${String(d.getUTCDate()).padStart(2,'0')}`;
-  const j=await jget(`https://en.wikipedia.org/api/rest_v1/feed/featured/${p}`);
+  const j=await jgs(sg,`https://en.wikipedia.org/api/rest_v1/feed/featured/${p}`);
   return(j.news||[]).slice(0,4).map((n,i)=>({id:`n:${p}:${i}`,title:'In the news '+p,text:strip(n.story),src:'https://en.wikipedia.org/wiki/Portal:Current_events'}));
 }
-async function otd(){
-  const d=new Date(),j=await jget(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${d.getUTCMonth()+1}/${d.getUTCDate()}`);
+async function otd(sg){
+  const d=new Date(),j=await jgs(sg,`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${d.getUTCMonth()+1}/${d.getUTCDate()}`);
   return(j.events||[]).sort(()=>Math.random()-.5).slice(0,4).map(e=>({id:`o:${e.year}:${(e.text||'').slice(0,24)}`,title:`On this day ${e.year}`,text:`${e.year}: ${e.text}`,src:e.pages?.[0]?.content_urls?.desktop?.page||'https://en.wikipedia.org'}));
 }
-async function hn(){
-  const ids=await jget('https://hacker-news.firebaseio.com/v0/topstories.json'),its=await Promise.all(ids.slice(0,6).map(i=>jget(`https://hacker-news.firebaseio.com/v0/item/${i}.json`).catch(()=>null)));
+async function hn(sg){
+  const ids=await jgs(sg,'https://hacker-news.firebaseio.com/v0/topstories.json'),its=await Promise.all(ids.slice(0,6).map(i=>jgs(sg,`https://hacker-news.firebaseio.com/v0/item/${i}.json`).catch(()=>null)));
   return its.filter(x=>x&&x.title).map(x=>({id:'h:'+x.id,title:'Tech news: '+x.title,text:x.title+(x.url?` (${x.url})`:''),src:x.url||`https://news.ycombinator.com/item?id=${x.id}`}));
 }
 async function so(q){
@@ -376,21 +379,24 @@ async function so(q){
 const TOP_EN=['physics','chemistry','biology','astronomy','medicine','world history','geography','economics','politics','literature','philosophy','psychology','mathematics','computer programming','artificial intelligence','cybersecurity','engineering','energy','environment','sports','cinema','music','cooking','travel','religion','law','education','animals','plants','technology','architecture','transportation','linguistics','sociology','video games'];
 const TOP_AR=['الفيزياء','الكيمياء','الأحياء','الفلك','الطب','التاريخ الإسلامي','الجغرافيا','الاقتصاد','السياسة','الأدب العربي','الفلسفة','علم النفس','الرياضيات','البرمجة','الذكاء الاصطناعي','الأمن السيبراني','الهندسة','الطاقة','البيئة','الرياضة','السينما','الموسيقى','الطبخ','السفر','الدين','القانون','التعليم','الحيوانات','النباتات','التقنية','العمارة','السيارات','اللغة العربية','المجتمع','ألعاب الفيديو'];
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-async function feat(){
-  const d=new Date(Date.now()-864e5),p=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${String(d.getUTCDate()).padStart(2,'0')}`,j=await jget(`https://en.wikipedia.org/api/rest_v1/feed/featured/${p}`),L=[];
+async function feat(sg){
+  const d=new Date(Date.now()-864e5),p=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${String(d.getUTCDate()).padStart(2,'0')}`,j=await jgs(sg,`https://en.wikipedia.org/api/rest_v1/feed/featured/${p}`),L=[];
   if(j.tfa)L.push(j.tfa);(j.mostread?.articles||[]).slice(0,8).forEach(a=>L.push(a));
   return L.filter(a=>a.extract&&a.extract.length>40).map(a=>({id:'f:'+(a.pageid||a.titles?.canonical||a.title),title:a.titles?.normalized||a.title,text:a.extract,src:a.content_urls?.desktop?.page||'https://en.wikipedia.org'}));
 }
 
 const lastTopics=()=>{const u=S.data.chats.flatMap(c=>c.msgs).filter(m=>m.role==='user').pop();return u?wq(u.content):''};
+let crawlCtl=new AbortController(),hold=0;
+function pauseStudy(){hold++;crawlCtl.abort();crawlCtl=new AbortController();$('#lst').textContent='وقفت الدراسة وركّزت على رسالتك...'}
+function resumeStudy(){hold=Math.max(0,hold-1);if(!hold&&S){$('#lst').textContent=`يدرس تلقائي • معرفتي: ${KB.length}`;setTimeout(()=>{if(!hold&&S)crawlOnce()},2500)}}
 async function crawlOnce(manual){
-  if(crawling||!S)return;crawling=true;$('#lst').textContent='يدرس تلقائي...';
+  if(crawling||!S||hold)return;crawling=true;$('#lst').textContent='يدرس تلقائي...';
   try{
     const sd=lastTopics(),ar=/[\u0600-\u06FF]/.test(sd);
-    const steps=[()=>wikiRandom('ar'),()=>wikiSearch(pick(TOP_AR),'ar',4),()=>wikiRandom('en'),itn,()=>wikiSearch(pick(TOP_EN),'en',4),()=>sd?wikiSearch(sd,ar?'ar':'en',3):wikiRandom('en'),feat,()=>wikiRandom('ar'),otd,()=>wikiSearch(pick(TOP_AR),'ar',4),hn,()=>wikiSearch(pick(TOP_EN),'en',4)];
+    const sg=crawlCtl.signal,steps=[()=>wikiRandom('ar',sg),()=>wikiSearch(pick(TOP_AR),'ar',4,sg),()=>wikiRandom('en',sg),()=>itn(sg),()=>wikiSearch(pick(TOP_EN),'en',4,sg),()=>sd?wikiSearch(sd,ar?'ar':'en',3,sg):wikiRandom('en',sg),()=>feat(sg),()=>wikiRandom('ar',sg),()=>otd(sg),()=>wikiSearch(pick(TOP_AR),'ar',4,sg),()=>hn(sg),()=>wikiSearch(pick(TOP_EN),'en',4,sg)];
     const n=await addKB(await steps[tick++%steps.length]());
-    $('#lst').textContent=`يدرس تلقائي • معرفتي: ${KB.length}`;
-  }catch(e){$('#lst').textContent=`معرفتي: ${KB.length}`}finally{crawling=false}
+    if(!hold)$('#lst').textContent=`يدرس تلقائي • معرفتي: ${KB.length}`;
+  }catch(e){if(!hold)$('#lst').textContent=`معرفتي: ${KB.length}`}finally{crawling=false}
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function startCrawlTimer(){clearInterval(crawlT);crawlT=setInterval(()=>{if(S)crawlOnce()},15000)}
@@ -398,10 +404,11 @@ function startCrawlTimer(){clearInterval(crawlT);crawlT=setInterval(()=>{if(S)cr
 /* ===== البحث قبل الرد + الأدوات ===== */
 async function gather(txt,code){
   const q=wq(txt)||txt.slice(0,80),ar=/[\u0600-\u06FF]/.test(txt);
-  const [w,s]=await Promise.all([wikiSearch(q,ar?'ar':'en',3).catch(()=>[]),code?so(q).catch(()=>[]):Promise.resolve([])]);
-  addKB([...w,...s]).catch(()=>{});
-  const seen=new Set(),docs=[...s,...w,...kbSearch(txt,3)].filter(d=>!seen.has(d.id)&&seen.add(d.id)).slice(0,5);
-  let ctx='';docs.forEach((d,i)=>{const t=`[${i+1}] ${d.title}: ${d.text.slice(0,650)}\n\n`;if(ctx.length+t.length<3400)ctx+=t});
+  const lw=wikiSearch(q,ar?'ar':'en',3).catch(()=>[]),ls=code?so(q).catch(()=>[]):Promise.resolve([]);
+  const [w,s]=await Promise.race([Promise.all([lw,ls]),sleep(3500).then(()=>[[],[]])]);
+  Promise.all([lw,ls]).then(([a,b])=>addKB([...a,...b])).catch(()=>{});
+  const seen=new Set(),docs=[...s,...w,...kbSearch(txt,3)].filter(d=>!seen.has(d.id)&&seen.add(d.id)).slice(0,4);
+  let ctx='';docs.forEach((d,i)=>{const t=`[${i+1}] ${d.title}: ${d.text.slice(0,600)}\n\n`;if(ctx.length+t.length<3000)ctx+=t});
   return{ctx:ctx.trim(),docs,sources:docs.filter(d=>/^https?:\/\//.test(d.src)).map(d=>({title:d.title,src:d.src}))};
 }
 function calc(t){
@@ -472,7 +479,7 @@ function drawMsgs(){
 $('#msgs').onclick=e=>{const b=e.target.closest('.cp');if(!b)return;navigator.clipboard.writeText(b.closest('.cb').querySelector('code').textContent);b.textContent='تم النسخ';setTimeout(()=>b.textContent='نسخ',1200)};
 
 async function generate(hm,txt,ctx,tools,bad,onChunk){
-  const cf=S.data.cfg,st=await withTimeout(engine.chat.completions.create({messages:buildMsgs(hm,txt,ctx,tools,bad),stream:true,temperature:bad?0.8:cf.deep?0.3:0.5,top_p:0.9,max_tokens:cf.deep?1500:1000,frequency_penalty:0.25}),120000,'الذكاء ما رد خلال دقيقتين. جرّب مرة ثانية.');
+  const cf=S.data.cfg,st=await withTimeout(engine.chat.completions.create({messages:buildMsgs(hm,txt,ctx,tools,bad),stream:true,temperature:bad?0.8:cf.deep?0.3:0.5,top_p:0.9,max_tokens:cf.deep?1500:700,frequency_penalty:0.25}),120000,'الذكاء ما رد خلال دقيقتين. جرّب مرة ثانية.');
   let out='',last=0;for await(const ch of st){out+=ch.choices[0]?.delta?.content||'';if(onChunk&&Date.now()-last>90){onChunk(out);last=Date.now()}}
   if(onChunk)onChunk(out);return out;
 }
@@ -480,13 +487,14 @@ async function flushPending(){
   if(!S||!engine||busy)return;
   for(const c of S.data.chats)for(let i=1;i<c.msgs.length;i++){
     const m=c.msgs[i];if(!(m.role==='assistant'&&m.pending&&c.msgs[i-1].role==='user'))continue;
-    busy=true;$('#send').disabled=true;
+    busy=true;pauseStudy();$('#send').disabled=true;
     try{const out=await generate(c.msgs.slice(0,i-1),c.msgs[i-1].content,m._ctx||'',m._tools||[],!!m._bad,null);if(out)m.content=out}
     catch(e){m.content+='\n\n(صار خطأ: '+friendly(e)+')'}
     delete m.pending;delete m._ctx;delete m._tools;delete m._bad;
-    busy=false;$('#send').disabled=false;if(c.id===cur)drawMsgs();persist();
+    busy=false;resumeStudy();$('#send').disabled=false;if(c.id===cur)drawMsgs();persist();
   }
 }
+let pre={t:'',p:null},preT=null;
 async function send(){
   if(busy||!S)return;const inp=$('#inp'),txt=inp.value.trim();if(!txt)return;
   if(cool>Date.now()){$('#note').textContent=`الدردشة متوقفة ${Math.ceil((cool-Date.now())/1000)} ثانية. التزم بالأدب.`;return}
@@ -494,13 +502,13 @@ async function send(){
   if(!cur)newChat();const c=chatOf(cur),bad=insult(txt),cf=S.data.cfg;
   if(bad){const now=Date.now();S.data.strikes=S.data.strikes.filter(t=>now-t<600000);S.data.strikes.push(now);if(S.data.strikes.length>=3){cool=now+120000;S.data.strikes=[];$('#note').textContent='تكرر السب: توقفت الدردشة دقيقتين.'}}
   c.msgs.push({role:'user',content:txt});if(c.msgs.length===1)c.title=txt.slice(0,40);
-  inp.value='';inp.style.height='auto';busy=true;$('#send').disabled=true;drawList();drawMsgs();
+  inp.value='';inp.style.height='auto';busy=true;pauseStudy();$('#send').disabled=true;drawList();drawMsgs();
   const row=document.createElement('div'),box=$('#msgs');row.className='row';row.innerHTML='<div class="a"><div class="who">YH AI</div><div dir="auto" class="bd" style="color:var(--mute)">يفكر...</div></div>';box.appendChild(row);box.scrollTop=1e9;
   const body=row.querySelector('.bd'),tools=[],cl=calc(txt);
   if(cl)tools.push('Calculator: '+cl);
   if(TIMEQ.test(norm(txt)))tools.push('Current local date and time: '+new Date().toLocaleString('en-GB',{dateStyle:'full',timeStyle:'short'})+' ('+Intl.DateTimeFormat().resolvedOptions().timeZone+')');
   let g={ctx:'',sources:[],docs:[]};
-  if(!bad&&cf.search&&!tools.length&&!(GREET.test(txt)&&txt.length<40)&&cf.skill!=='translate'){body.textContent='يبحث ويراجع معرفته...';try{g=await withTimeout(gather(txt,CODE.test(txt)||['script','debug'].includes(cf.skill)),15000,'t')}catch{}}
+  if(!bad&&cf.search&&!tools.length&&!(GREET.test(txt)&&txt.length<40)&&cf.skill!=='translate'){body.textContent='يبحث ويراجع معرفته...';const code=CODE.test(txt)||['script','debug'].includes(cf.skill);try{g=await withTimeout(pre.t===txt&&pre.p?pre.p.catch(()=>gather(txt,code)):gather(txt,code),5000,'t')}catch{}}
   let out='',err=false;
   let pend=null;
   try{
@@ -518,11 +526,12 @@ async function send(){
       out=out?(pend||m==='NOGPU'?out+'\n\n'+note:out):'جاري تجهيز الذكاء... '+note;
     }else{err=true;out=(out?out+'\n\n':'')+'صار خطأ: '+friendly(er)+'\nجرّب مرة ثانية.'}
   }
-  c.msgs.push({role:'assistant',content:out||'(ما وصل رد)',err,sources:g.sources,...(pend||{})});busy=false;$('#send').disabled=false;drawMsgs();persist();
+  c.msgs.push({role:'assistant',content:out||'(ما وصل رد)',err,sources:g.sources,...(pend||{})});busy=false;resumeStudy();$('#send').disabled=false;drawMsgs();persist();
   if(!bad)learnFacts(txt);
   if(engine)setTimeout(flushPending,200);
 }
 $('#send').onclick=send;
+$('#inp').addEventListener('input',e=>{clearTimeout(preT);const t=e.target.value.trim();if(!S||busy||t.length<8)return;preT=setTimeout(()=>{const cf=S.data.cfg;if(!cf.search||insult(t)||calc(t)||TIMEQ.test(norm(t))||(GREET.test(t)&&t.length<40)||cf.skill==='translate')return;pauseStudy();const pr=gather(t,CODE.test(t)||['script','debug'].includes(cf.skill));pre={t,p:pr};pr.catch(()=>{}).finally(resumeStudy)},700)});
 $('#inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
 $('#inp').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px'});
 $('#skill').onchange=e=>{S.data.cfg.skill=e.target.value;persist()};
@@ -558,7 +567,7 @@ $('#delAcc').onclick=async()=>{if(!confirm('حذف الحساب وكل بيان�
 
 async function afterStart(){
   await loadKB();if(!S)return;drawMemN();$('#lst').textContent=`معرفتي: ${KB.length}`;
-  startCrawlTimer();(async()=>{for(let k=0;k<8&&S;k++){await crawlOnce();await sleep(1200)}})();
+  startCrawlTimer();(async()=>{for(let k=0;k<8&&S;k++){while(hold)await sleep(500);await crawlOnce();await sleep(1200)}})();
   if(hasGPU()){$('#est').textContent=engine?'الذكاء جاهز ✓':'يجهّز الذكاء...';if(!engine)startLoad();else setTimeout(flushPending,300)}else{$('#est').textContent='الذكاء غير مشغّل';banner()}
 }
 restore();
