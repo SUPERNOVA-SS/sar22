@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.openai.com https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.openai.com https://generativelanguage.googleapis.com https://*.workers.dev; base-uri 'none'; form-action 'none'">
 <title>YH AI</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e1014;--p:#161a21;--p2:#1e232c;--line:#2a303c;--ink:#e9ecf2;--mute:#8b93a5;--acc:#7cf0c8;--acc2:#8ea2ff;--err:#ff6b6b;--warn:#f2c14e}
 *{box-sizing:border-box}html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 'IBM Plex Sans Arabic',system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'IBM Plex Sans Arabic',system-ui,sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 :focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 .hide{display:none!important}
@@ -17,9 +17,10 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#06130e;border:0;font-weight:700}
 .btn.dng{border-color:var(--err);color:var(--err)}.btn:disabled{opacity:.6;cursor:wait}
 input[type=text],input[type=password],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input.en{direction:ltr;text-align:left}
 #auth{min-height:100%;display:grid;place-items:center;padding:20px}
 .card{width:100%;max-width:410px;background:var(--p);border:1px solid var(--line);border-radius:18px;padding:28px}
-.brand{display:flex;align-items:center;gap:10px;font-size:1.5rem;font-weight:700}
+.brand{display:flex;align-items:center;gap:10px;font-size:1.5rem;font-weight:700;direction:ltr;justify-content:flex-end}
 .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#06130e;display:grid;place-items:center;font-size:.9rem;font-weight:700}
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:18px 0}
 .tabs button{padding:9px;border-radius:10px;border:1px solid var(--line);background:none}
@@ -30,8 +31,9 @@ input[type=text],input[type=password],select,textarea{width:100%;background:var(
 .msg{min-height:1.4em;font-size:.88rem;color:var(--err);margin:8px 0}
 .fine{font-size:.78rem;color:var(--mute);margin-top:12px}
 .lnk{background:none;border:0;color:var(--acc2);padding:0;font-size:.82rem;text-decoration:underline}
+.chk{display:flex;gap:8px;align-items:flex-start;margin:10px 0;font-size:.9rem}.chk input{margin-top:6px}
 #app{height:100%;display:grid;grid-template-columns:270px 1fr}
-aside{background:var(--p);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside{background:var(--p);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
 aside header{padding:14px;display:flex;flex-direction:column;gap:10px}
 #list{flex:1;overflow:auto;padding:0 10px}
 .ci{display:flex;justify-content:space-between;gap:6px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:.92rem}
@@ -44,9 +46,9 @@ main{display:flex;flex-direction:column;min-height:0}
 #menu{display:none}
 #msgs{flex:1;overflow:auto;padding:20px 16px}
 .row{max-width:860px;margin:0 auto 18px}
-.u{background:var(--p2);border-radius:14px;padding:10px 14px;width:fit-content;max-width:85%;margin-left:auto}
-.a{border-left:3px solid var(--acc);padding:2px 14px}
-.who{font-size:.78rem;color:var(--acc);font-weight:700;margin-bottom:2px}
+.u{background:var(--p2);border-radius:14px;padding:10px 14px;width:fit-content;max-width:85%;margin-inline-start:auto}
+.a{border-inline-start:3px solid var(--acc);padding:2px 14px}
+.who{font-size:.78rem;color:var(--acc);font-weight:700;margin-bottom:2px;direction:ltr;text-align:start}
 .err{color:var(--err)}.warn{color:var(--warn)}
 .cb{margin:10px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;direction:ltr;text-align:left}
 .ch{display:flex;justify-content:space-between;align-items:center;background:var(--p2);padding:4px 10px;font-size:.78rem;color:var(--mute)}
@@ -64,127 +66,146 @@ dialog::backdrop{background:#000b}dialog h3{margin:0 0 12px}dialog h4{margin:16p
 .acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .mem{display:flex;gap:8px;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:.9rem}
 .mem button{background:none;border:0;color:var(--err)}.mem small{color:var(--mute);display:block}
-.chk{display:flex;gap:8px;align-items:flex-start;margin:10px 0;font-size:.9rem}.chk input{margin-top:5px}
-@media(max-width:800px){#app{grid-template-columns:1fr}aside{position:fixed;top:0;bottom:0;left:0;width:280px;z-index:5;transform:translateX(-105%);transition:transform .2s}aside.open{transform:none}#menu{display:block}}
+details summary{cursor:pointer;color:var(--mute);font-size:.88rem;margin:10px 0}
+@media(max-width:800px){#app{grid-template-columns:1fr}aside{position:fixed;top:0;bottom:0;right:0;width:280px;z-index:5;transform:translateX(105%);transition:transform .2s}aside.open{transform:none}#menu{display:block}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
-<section id="auth">
+<section id="auth" class="hide">
   <div class="card">
     <div class="brand"><span class="logo">YH</span>YH AI</div>
-    <div style="color:var(--mute);margin-top:4px">Your AI that keeps learning about the world.</div>
-    <div class="tabs" role="tablist"><button id="tL" aria-selected="true">Log in</button><button id="tR" aria-selected="false">Sign up</button></div>
-    <div class="fld"><label for="un">Username</label><input type="text" id="un" autocomplete="username" maxlength="20" placeholder="3-20 letters, numbers or _"></div>
-    <div class="fld"><label for="pw">Password</label><input type="password" id="pw" autocomplete="current-password"><div class="meter hide" id="mt"><b></b></div></div>
-    <div class="fld hide" id="pw2w"><label for="pw2">Confirm password</label><input type="password" id="pw2" autocomplete="new-password"><div class="fine">Min 10 characters, mix of upper/lower case, numbers or symbols.</div></div>
+    <div style="color:var(--mute);margin-top:4px">ذكاؤك الاصطناعي اللي يتعلم عن العالم باستمرار.</div>
+    <div class="tabs" role="tablist"><button id="tL" aria-selected="true">دخول</button><button id="tR" aria-selected="false">حساب جديد</button></div>
+    <div class="fld"><label for="un">اسم المستخدم (إنجليزي فقط)</label><input type="text" class="en" id="un" autocomplete="username" maxlength="20" placeholder="username"></div>
+    <div class="fld"><label for="pw">كلمة المرور (إنجليزي فقط)</label><input type="password" class="en" id="pw" autocomplete="current-password"><div class="meter hide" id="mt"><b></b></div></div>
+    <div class="fld hide" id="pw2w"><label for="pw2">تأكيد كلمة المرور</label><input type="password" class="en" id="pw2" autocomplete="new-password"><div class="fine">10 أحرف على الأقل، حروف كبيرة وصغيرة مع أرقام أو رموز.</div></div>
+    <label class="chk"><input type="checkbox" id="rem" checked><span>خلّني مسجل دخول (يتحقق منك كل ساعتين)</span></label>
     <div class="msg" id="amsg" role="alert"></div>
-    <button class="btn pri" id="abtn" style="width:100%;padding:12px">Log in</button>
-    <p class="fine">Your data, chats and API keys are encrypted with AES-256 using a key derived from your password. They are stored only in this browser. If you forget your password it cannot be recovered. <button class="lnk" id="impB">Import backup</button><input type="file" id="imp" accept=".json" class="hide"></p>
+    <button class="btn pri" id="abtn" style="width:100%;padding:12px">دخول</button>
+    <p class="fine">بياناتك ومحادثاتك مشفرة بـ AES-256 من كلمة مرورك وتنحفظ بهذا المتصفح فقط. إذا نسيت كلمة المرور ما فيه استرجاع. <button class="lnk" id="impB">استيراد نسخة احتياطية</button><input type="file" id="imp" accept=".json" class="hide"></p>
   </div>
 </section>
 
 <section id="app" class="hide">
   <aside id="side">
-    <header><div class="brand" style="font-size:1.25rem"><span class="logo">YH</span>YH AI</div><button class="btn pri" id="newc">+ New chat</button></header>
+    <header><div class="brand" style="font-size:1.25rem"><span class="logo">YH</span>YH AI</div><button class="btn pri" id="newc">+ محادثة جديدة</button></header>
     <div id="list"></div>
-    <footer><button class="btn" id="memB">🧠 Memory &amp; knowledge (<span id="memN">0</span>)</button><button class="btn" id="setB">⚙ Settings</button><button class="btn" id="out">Log out (<span id="who"></span>)</button></footer>
+    <footer><button class="btn" id="memB">🧠 الذاكرة والمعرفة (<span id="memN">0</span>)</button><button class="btn" id="setB">⚙ الإعدادات</button><button class="btn" id="out">خروج (<span id="who" dir="ltr"></span>)</button></footer>
   </aside>
   <main>
     <div class="top">
-      <button class="btn" id="menu" aria-label="Menu">☰</button>
-      <select id="skill" aria-label="Skill">
-        <option value="general">General assistant</option><option value="script">Script helper (code)</option><option value="debug">Debugger</option><option value="translate">Translator</option><option value="research">Researcher (live web)</option><option value="teach">Teacher</option>
+      <button class="btn" id="menu" aria-label="القائمة">☰</button>
+      <select id="skill" aria-label="المهارة">
+        <option value="general">مساعد عام</option><option value="script">مساعد سكربتات (برمجة)</option><option value="debug">مصحّح أخطاء</option><option value="translate">مترجم</option><option value="research">باحث (إنترنت مباشر)</option><option value="teach">معلّم</option>
       </select><span class="sp"></span><span class="st" id="lst"></span>
     </div>
     <div id="msgs"></div>
     <div class="bar">
-      <div class="opts"><label><input type="checkbox" id="oSearch"> Live web search</label><label><input type="checkbox" id="oDeep"> Deep mode</label><label><input type="checkbox" id="oMem"> Learn from chats</label></div>
+      <div class="opts"><label><input type="checkbox" id="oSearch"> بحث مباشر بالإنترنت</label><label><input type="checkbox" id="oDeep"> وضع التفكير العميق</label><label><input type="checkbox" id="oMem"> تعلّم من محادثاتي</label></div>
       <div class="msg warn" id="note" style="max-width:860px;margin:0 auto 4px;min-height:0"></div>
-      <div><textarea id="inp" rows="1" placeholder="Message YH AI in any language... (Enter to send)" maxlength="8000"></textarea><button class="btn pri" id="send">Send</button></div>
+      <div><textarea id="inp" rows="1" placeholder="اكتب لـ YH AI بأي لغة... (Enter للإرسال)" maxlength="8000"></textarea><button class="btn pri" id="send">إرسال</button></div>
     </div>
   </main>
 </section>
 
 <dialog id="dSet">
-  <h3>Settings</h3>
-  <h4>Engines</h4>
-  <div class="fld"><label for="kA">Primary engine key</label><input type="password" id="kA" placeholder="sk-..." autocomplete="off"></div>
-  <div class="fld"><label for="kB">Secondary engine key</label><input type="password" id="kB" placeholder="AIza..." autocomplete="off"></div>
-  <div class="fld"><label for="mA">Primary engine model</label><input type="text" id="mA"></div>
-  <div class="fld"><label for="mB">Secondary engine model</label><input type="text" id="mB"></div>
-  <p class="fine" style="margin-top:0">With both keys, YH AI cross-checks two engines and merges the best answer. One key works too. Keys never leave your browser except to call their own provider. Set spending limits on your keys.</p>
-  <h4>Personality</h4>
+  <h3>الإعدادات</h3>
+  <h4>الربط</h4>
+  <p class="fine" style="margin-top:0" id="link"></p>
+  <details><summary>مفاتيحي الخاصة (اختياري)</summary>
+    <div class="fld"><label for="kA">مفتاح المحرك الأساسي</label><input type="password" class="en" id="kA" placeholder="sk-..." autocomplete="off"></div>
+    <div class="fld"><label for="kB">مفتاح المحرك الثانوي</label><input type="password" class="en" id="kB" placeholder="AIza..." autocomplete="off"></div>
+    <div class="fld"><label for="mA">موديل الأساسي</label><input type="text" class="en" id="mA"></div>
+    <div class="fld"><label for="mB">موديل الثانوي</label><input type="text" class="en" id="mB"></div>
+    <p class="fine" style="margin-top:0">إذا حطيت مفتاحك يشتغل مباشرة بحسابك بدل الربط التلقائي. المفاتيح تنحفظ مشفرة عندك فقط.</p>
+  </details>
+  <h4>الشخصية</h4>
   <div class="fld"><textarea id="sys" rows="3"></textarea></div>
-  <h4>Auto-learning</h4>
-  <label class="chk"><input type="checkbox" id="oAuto"><span>Let YH AI learn about the world in the background while this tab is open (uses your API quota).</span></label>
-  <div class="fld"><label for="lmin">Learn every (minutes)</label><input type="text" id="lmin" inputmode="numeric"></div>
-  <h4>Account</h4>
-  <div class="acts"><button class="btn" id="exp">Export encrypted backup</button><button class="btn dng" id="delAcc">Delete account</button></div>
-  <div class="acts"><button class="btn pri" id="sSave">Save</button><button class="btn" id="sClose">Close</button></div>
+  <h4>التعلم التلقائي</h4>
+  <label class="chk"><input type="checkbox" id="oAuto"><span>خلّ YH AI يتعلم عن العالم بالخلفية وأنا فاتح الصفحة (يستهلك من رصيد الـ API).</span></label>
+  <div class="fld"><label for="lmin">يتعلم كل (دقيقة)</label><input type="text" class="en" id="lmin" inputmode="numeric"></div>
+  <h4>الحساب</h4>
+  <div class="acts"><button class="btn" id="exp">تصدير نسخة احتياطية مشفرة</button><button class="btn dng" id="delAcc">حذف الحساب</button></div>
+  <div class="acts"><button class="btn pri" id="sSave">حفظ</button><button class="btn" id="sClose">إغلاق</button></div>
 </dialog>
 <dialog id="dMem">
-  <h3>Memory &amp; knowledge</h3>
-  <div class="acts" style="margin-top:0"><button class="btn pri" id="learnNow">Learn something new now</button></div>
-  <h4>World knowledge (learned automatically)</h4><div id="knL"></div>
-  <h4>About you (from your chats)</h4><div id="memL"></div>
-  <div class="acts"><button class="btn" id="mClose">Close</button><button class="btn dng" id="mClear">Clear all</button></div>
+  <h3>الذاكرة والمعرفة</h3>
+  <div class="acts" style="margin-top:0"><button class="btn pri" id="learnNow">تعلّم شي جديد الحين</button></div>
+  <h4>معرفة عن العالم (يتعلمها تلقائيا)</h4><div id="knL"></div>
+  <h4>عنك (من محادثاتك)</h4><div id="memL"></div>
+  <div class="acts"><button class="btn" id="mClose">إغلاق</button><button class="btn dng" id="mClear">مسح الكل</button></div>
 </dialog>
 
 <script>
 'use strict';
+/* ===== الربط التلقائي =====
+   بعد ما ترفع worker.js على Cloudflare حط رابطه هنا (بدون / بالأخير). مثال: 'https://yh-ai.myname.workers.dev'
+   وهكذا ما أحد يحتاج يحط مفاتيح. */
+const PROXY=''.replace(/\/+$/,'');
+
 const $=s=>document.querySelector(s),enc=new TextEncoder(),dec=new TextDecoder();
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function b64(u){let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)}
 const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-function md(t){return String(t).split('```').map((p,i)=>i%2?`<div class="cb"><div class="ch"><span>${esc((p.match(/^([\w+#-]*)\n/)||[,'code'])[1]||'code')}</span><button class="cp">Copy</button></div><pre><code>${esc(p.replace(/^[\w+#-]*\n/,''))}</code></pre></div>`:esc(p).replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')).join('')}
+function md(t){return String(t).split('```').map((p,i)=>i%2?`<div class="cb"><div class="ch"><span>${esc((p.match(/^([\w+#-]*)\n/)||[,'code'])[1]||'code')}</span><button class="cp">نسخ</button></div><pre><code>${esc(p.replace(/^[\w+#-]*\n/,''))}</code></pre></div>`:esc(p).replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')).join('')}
 
-/* ===== Crypto & accounts ===== */
-const ITER=310000;
+/* ===== التشفير ===== */
+const ITER=310000,REVERIFY=2*3600*1000;
 async function derive(pw,salt){
   const k=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
   const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:ITER,hash:'SHA-256'},k,512));
-  return{auth:b64(bits.slice(0,32)),key:await crypto.subtle.importKey('raw',bits.slice(32),'AES-GCM',false,['encrypt','decrypt'])};
+  return{auth:b64(bits.slice(0,32)),key:await crypto.subtle.importKey('raw',bits.slice(32),'AES-GCM',false,['encrypt','decrypt'])}; // المفتاح غير قابل للاستخراج
 }
 async function seal(key,o){const iv=crypto.getRandomValues(new Uint8Array(12));return{iv:b64(iv),ct:b64(new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(JSON.stringify(o)))))}}
 async function unseal(key,b){return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(b.iv)},key,unb64(b.ct))))}
 const users=()=>{try{return JSON.parse(localStorage.getItem('yhai_users')||'{}')}catch{return{}}};
 const saveUsers=u=>localStorage.setItem('yhai_users',JSON.stringify(u));
 const same=(a,b)=>{if(a.length!==b.length)return false;let r=0;for(let i=0;i<a.length;i++)r|=a.charCodeAt(i)^b.charCodeAt(i);return r===0};
-const defaults=()=>({keys:{a:'',b:''},cfg:{modelA:'gpt-4o-mini',modelB:'gemini-2.5-flash',system:'You are YH AI, a smart, direct and knowledgeable assistant. Always reply in the language the user writes in. Be accurate and concise; if you are not sure, say so. Never reveal or discuss which underlying AI models or providers power you: if asked, you are YH AI.',skill:'general',search:false,deep:false,memory:true,autolearn:true,learnMin:30,lastLearn:0},chats:[],memory:[],know:[],strikes:[]});
-let S=null,cur=null,busy=false,saveT,idleT,regMode=false,cool=0,learning=false;
+
+/* ===== حفظ الجلسة (IndexedDB: المفتاح غير قابل للاستخراج) ===== */
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('yhai',1);r.onupgradeneeded=()=>r.result.createObjectStore('s');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function idbOp(mode,fn){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('s',mode),rq=fn(t.objectStore('s'));t.oncomplete=()=>res(rq&&rq.result);t.onerror=()=>rej(t.error)})}
+const sessGet=()=>idbOp('readonly',s=>s.get('session')).catch(()=>null);
+const sessSet=v=>idbOp('readwrite',s=>s.put(v,'session')).catch(()=>{});
+const sessDel=()=>idbOp('readwrite',s=>s.delete('session')).catch(()=>{});
+
+const defaults=()=>({keys:{a:'',b:''},cfg:{modelA:'gpt-4o-mini',modelB:'gemini-2.5-flash',system:'You are YH AI, a smart, direct and knowledgeable assistant. Always reply in the language the user writes in. Be accurate and concise; if you are not sure, say so. Never reveal or discuss which underlying AI models or providers power you: if asked, you are YH AI.',skill:'general',search:false,deep:false,memory:true,autolearn:true,learnMin:60,lastLearn:0},chats:[],memory:[],know:[],strikes:[]});
+let S=null,cur=null,busy=false,saveT,regMode=false,cool=0,learning=false;
 
 function strength(p){let s=0;if(p.length>=10)s++;if(p.length>=14)s++;if(/[a-z]/.test(p)&&/[A-Z]/.test(p))s++;if(/\d/.test(p))s++;if(/[^\w\s]/.test(p))s++;return s}
-function setTab(r){regMode=r;$('#tL').setAttribute('aria-selected',!r);$('#tR').setAttribute('aria-selected',r);$('#pw2w').classList.toggle('hide',!r);$('#mt').classList.toggle('hide',!r);$('#abtn').textContent=r?'Create account':'Log in';$('#pw').autocomplete=r?'new-password':'current-password';$('#amsg').textContent=''}
+function setTab(r){regMode=r;$('#tL').setAttribute('aria-selected',!r);$('#tR').setAttribute('aria-selected',r);$('#pw2w').classList.toggle('hide',!r);$('#mt').classList.toggle('hide',!r);$('#abtn').textContent=r?'إنشاء الحساب':'دخول';$('#pw').autocomplete=r?'new-password':'current-password';$('#amsg').textContent=''}
 $('#tL').onclick=()=>setTab(false);$('#tR').onclick=()=>setTab(true);
-$('#pw').oninput=()=>{const s=strength($('#pw').value),b=$('#mt b');b.style.width=s*20+'%';b.style.background=['#ff6b6b','#ff6b6b','#f2c14e','#9bd45b','#2dd4a7','#2dd4a7'][s]};
+// الكتابة بالتسجيل إنجليزي فقط
+['#un','#pw','#pw2'].forEach(s=>$(s).addEventListener('input',e=>{const v=e.target.value,c=v.replace(/[^\x21-\x7E]/g,'');if(c!==v){e.target.value=c;$('#amsg').textContent='اكتب بالإنجليزي فقط (حروف وأرقام ورموز، بدون مسافات).'}
+  if(e.target.id==='pw'){const n=strength(c),b=$('#mt b');b.style.width=n*20+'%';b.style.background=['#ff6b6b','#ff6b6b','#f2c14e','#9bd45b','#2dd4a7','#2dd4a7'][n]}}));
 
 async function authGo(){
   const msg=t=>$('#amsg').textContent=t,name=$('#un').value.trim().toLowerCase(),pw=$('#pw').value,all=users();
-  if(!/^[a-z0-9_]{3,20}$/.test(name))return msg('Username must be 3-20 letters, numbers or underscores.');
+  if(!/^[a-z0-9_]{3,20}$/.test(name))return msg('اسم المستخدم: 3-20 حرف إنجليزي أو رقم أو _');
   $('#abtn').disabled=true;
   try{
     if(regMode){
-      if(all[name])return msg('That username is already taken.');
-      if(strength(pw)<3||pw.length<10)return msg('Password too weak: use 10+ characters with upper & lower case plus numbers or symbols.');
-      if(pw!==$('#pw2').value)return msg('Passwords do not match.');
-      msg('Creating your encrypted account...');
+      if(all[name])return msg('اسم المستخدم محجوز.');
+      if(strength(pw)<3||pw.length<10)return msg('كلمة المرور ضعيفة: 10 أحرف على الأقل مع حروف كبيرة وصغيرة وأرقام أو رموز.');
+      if(pw!==$('#pw2').value)return msg('كلمتا المرور غير متطابقتين.');
+      msg('جاري إنشاء حسابك المشفر...');
       const salt=crypto.getRandomValues(new Uint8Array(16)),d=await derive(pw,salt),data=defaults();
       all[name]={salt:b64(salt),auth:d.auth,vault:await seal(d.key,data),fails:0,until:0};saveUsers(all);
-      return start(name,d.key,data);
+      return start(name,d.key,data,Date.now(),$('#rem').checked);
     }
     const u=all[name];
-    if(u&&u.until>Date.now())return msg(`Too many attempts. Try again in ${Math.ceil((u.until-Date.now())/1000)}s.`);
-    msg('Verifying...');
+    if(u&&u.until>Date.now())return msg(`محاولات كثيرة. انتظر ${Math.ceil((u.until-Date.now())/1000)} ثانية.`);
+    msg('جاري التحقق...');
     const d=await derive(pw,u?unb64(u.salt):crypto.getRandomValues(new Uint8Array(16)));
     if(!u||!same(d.auth,u.auth)){
       if(u){u.fails=(u.fails||0)+1;if(u.fails>=5)u.until=Date.now()+Math.min(30000*2**(u.fails-5),900000);saveUsers(all)}
-      return msg('Incorrect username or password.');
+      return msg('اسم المستخدم أو كلمة المرور غلط.');
     }
     u.fails=0;u.until=0;saveUsers(all);
-    start(name,d.key,await unseal(d.key,u.vault));
-  }catch(e){msg('Something went wrong: '+e.message)}finally{$('#abtn').disabled=false}
+    start(name,d.key,await unseal(d.key,u.vault),Date.now(),$('#rem').checked);
+  }catch(e){msg('صار خطأ: '+e.message)}finally{$('#abtn').disabled=false}
 }
 $('#abtn').onclick=authGo;
 ['#un','#pw','#pw2'].forEach(s=>$(s).addEventListener('keydown',e=>{if(e.key==='Enter')authGo()}));
@@ -193,41 +214,60 @@ $('#imp').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   try{const j=JSON.parse(await f.text()),u=j.user,n=String(j.name||'').toLowerCase();
     if(!/^[a-z0-9_]{3,20}$/.test(n)||!u||typeof u.salt!=='string'||typeof u.auth!=='string'||typeof u.vault?.iv!=='string'||typeof u.vault?.ct!=='string')throw 0;
-    const all=users();if(all[n]&&!confirm(`Account "${n}" exists on this device. Overwrite it?`))return;
-    all[n]={salt:u.salt,auth:u.auth,vault:u.vault,fails:0,until:0};saveUsers(all);$('#un').value=n;setTab(false);$('#amsg').textContent='Backup imported. Log in with your password.';
-  }catch{$('#amsg').textContent='Invalid backup file.'}
+    const all=users();if(all[n]&&!confirm(`الحساب "${n}" موجود بهذا الجهاز. تبي تستبدله؟`))return;
+    all[n]={salt:u.salt,auth:u.auth,vault:u.vault,fails:0,until:0};saveUsers(all);$('#un').value=n;setTab(false);$('#amsg').textContent='تم استيراد النسخة. ادخل بكلمة مرورك.';
+  }catch{$('#amsg').textContent='ملف النسخة الاحتياطية غير صالح.'}
 };
 
-function start(name,key,data){
-  S={name,key,data};const d=S.data;const df=defaults();d.cfg=Object.assign(df.cfg,d.cfg);d.keys=Object.assign(df.keys,d.keys);d.know=d.know||[];d.strikes=d.strikes||[];
+function start(name,key,data,verifiedAt,remember){
+  S={name,key,data,verifiedAt,remember};const d=S.data,df=defaults();d.cfg=Object.assign(df.cfg,d.cfg);d.keys=Object.assign(df.keys,d.keys);d.know=d.know||[];d.strikes=d.strikes||[];
+  localStorage.setItem('yhai_last',name);
+  if(remember)sessSet({name,key,verifiedAt});else sessDel();
   $('#pw').value=$('#pw2').value='';$('#amsg').textContent='';
   $('#auth').classList.add('hide');$('#app').classList.remove('hide');$('#who').textContent=name;
   $('#skill').value=d.cfg.skill;$('#oSearch').checked=d.cfg.search;$('#oDeep').checked=d.cfg.deep;$('#oMem').checked=d.cfg.memory;
-  cur=d.chats[0]?.id||null;drawList();drawMsgs();drawMemN();idleReset();
+  cur=d.chats[0]?.id||null;drawList();drawMsgs();drawMemN();
 }
-function logout(){S=null;cur=null;clearTimeout(idleT);$('#app').classList.add('hide');$('#auth').classList.remove('hide');$('#msgs').innerHTML='';$('#list').innerHTML='';document.querySelectorAll('dialog[open]').forEach(d=>d.close())}
-$('#out').onclick=logout;
-function idleReset(){clearTimeout(idleT);if(S)idleT=setTimeout(()=>{logout();$('#amsg').textContent='Locked after 15 minutes of inactivity.'},15*60000)}
-['pointerdown','keydown'].forEach(e=>addEventListener(e,idleReset));
-function persist(){clearTimeout(saveT);saveT=setTimeout(async()=>{if(!S)return;const all=users();if(all[S.name]){all[S.name].vault=await seal(S.key,S.data);saveUsers(all)}},400)}
+async function flush(){clearTimeout(saveT);if(!S)return;const all=users();if(all[S.name]){all[S.name].vault=await seal(S.key,S.data);saveUsers(all)}}
+function showAuth(msg){S=null;cur=null;$('#app').classList.add('hide');$('#auth').classList.remove('hide');$('#msgs').innerHTML='';$('#list').innerHTML='';document.querySelectorAll('dialog[open]').forEach(d=>d.close());$('#un').value=localStorage.getItem('yhai_last')||'';$('#amsg').textContent=msg||'';setTab(false);($('#un').value?$('#pw'):$('#un')).focus()}
+async function logout(msg){await flush();await sessDel();showAuth(msg)}
+$('#out').onclick=()=>logout();
+// تحقق دوري: كل ساعتين لازم يأكد كلمة المرور
+setInterval(()=>{if(S&&Date.now()-S.verifiedAt>REVERIFY)logout('مرت ساعتين: أكّد كلمة المرور عشان تكمل.')},30000);
+function persist(){clearTimeout(saveT);saveT=setTimeout(flush,400)}
+async function restore(){
+  try{const s=await sessGet(),all=users();
+    if(s&&all[s.name]){
+      if(Date.now()-s.verifiedAt<REVERIFY)return start(s.name,s.key,await unseal(s.key,all[s.name].vault),s.verifiedAt,true);
+      await sessDel();return showAuth('مرت ساعتين: أكّد كلمة المرور عشان تكمل.');
+    }
+  }catch{await sessDel()}
+  showAuth();
+}
 
-/* ===== Engines (provider names are never shown in the chat UI) ===== */
+/* ===== المحركات ===== */
+const NOKEY='NOKEY';
+const linked=()=>!!PROXY;
 async function askA(h,sys){
-  const k=S.data.keys.a;if(!k)throw Error('Primary engine key is missing. Add it in Settings.');
-  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',signal:AbortSignal.timeout(90000),headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},body:JSON.stringify({model:S.data.cfg.modelA,messages:[{role:'system',content:sys},...h]})});
-  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error('Primary engine: '+(j.error?.message||r.status));return j.choices?.[0]?.message?.content||'';
+  const own=S.data.keys.a;if(!own&&!PROXY)throw Error(NOKEY);
+  const headers={'Content-Type':'application/json'};if(own)headers.Authorization='Bearer '+own;
+  const r=await fetch(own?'https://api.openai.com/v1/chat/completions':PROXY+'/openai',{method:'POST',signal:AbortSignal.timeout(90000),headers,body:JSON.stringify({model:S.data.cfg.modelA,messages:[{role:'system',content:sys},...h]})});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error('المحرك الأساسي: '+(j.error?.message||r.status));return j.choices?.[0]?.message?.content||'';
 }
 async function askB(h,sys,search){
-  const k=S.data.keys.b;if(!k)throw Error('Secondary engine key is missing. Add it in Settings.');
+  const own=S.data.keys.b;if(!own&&!PROXY)throw Error(NOKEY);
   const body={systemInstruction:{parts:[{text:sys}]},contents:h.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]}))};
   if(search)body.tools=[{google_search:{}}];
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(S.data.cfg.modelB)}:generateContent`,{method:'POST',signal:AbortSignal.timeout(90000),headers:{'Content-Type':'application/json','x-goog-api-key':k},body:JSON.stringify(body)});
-  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error('Secondary engine: '+(j.error?.message||r.status));
+  const headers={'Content-Type':'application/json'};if(own)headers['x-goog-api-key']=own;
+  const r=await fetch(own?`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(S.data.cfg.modelB)}:generateContent`:PROXY+'/gemini',{method:'POST',signal:AbortSignal.timeout(90000),headers,body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error('المحرك الثانوي: '+(j.error?.message||r.status));
   return (j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
 }
-const quick=(p,sys,search)=>S.data.keys.b?askB([{role:'user',content:p}],sys,search):askA([{role:'user',content:p}],sys);
+const hasA=()=>S&&(S.data.keys.a||PROXY),hasB=()=>S&&(S.data.keys.b||PROXY),hasKey=()=>hasA()||hasB();
+const quick=(p,sys,search)=>hasB()?askB([{role:'user',content:p}],sys,search):askA([{role:'user',content:p}],sys);
+const NOKEY_MSG='الذكاء مو مربوط بعد: صاحب الموقع لازم يضبط رابط الربط (PROXY)، أو أضف مفتاحك من ⚙ الإعدادات.';
 
-/* ===== Skills, insult guard ===== */
+/* ===== المهارات وحماية السب ===== */
 const SKILLS={
   general:'',
   script:'SKILL: Script helper. You are a senior software engineer. Give complete, working, copy-paste-ready code in fenced code blocks with the language tag. Ask for missing details only if essential. Briefly explain how to run it, mention edge cases and security concerns. Refuse to write malware or code meant to harm others.',
@@ -251,41 +291,40 @@ function system(extra){
     k?`Things you have learned about the world recently:\n${k}`:'',extra||''].filter(Boolean).join('\n\n');
 }
 
-/* ===== Chat ===== */
+/* ===== الدردشة ===== */
 const chatOf=id=>S.data.chats.find(c=>c.id===id);
-function newChat(){const c={id:crypto.randomUUID(),title:'New chat',msgs:[]};S.data.chats.unshift(c);cur=c.id;drawList();drawMsgs();persist();$('#side').classList.remove('open');$('#inp').focus()}
+function newChat(){const c={id:crypto.randomUUID(),title:'محادثة جديدة',msgs:[]};S.data.chats.unshift(c);cur=c.id;drawList();drawMsgs();persist();$('#side').classList.remove('open');$('#inp').focus()}
 $('#newc').onclick=newChat;$('#menu').onclick=()=>$('#side').classList.toggle('open');
-function drawList(){const l=$('#list');l.innerHTML='';S.data.chats.forEach(c=>{const d=document.createElement('div');d.className='ci'+(c.id===cur?' on':'');d.innerHTML=`<span dir="auto">${esc(c.title)}</span><button aria-label="Delete chat">✕</button>`;d.onclick=()=>{cur=c.id;drawList();drawMsgs();$('#side').classList.remove('open')};d.querySelector('button').onclick=e=>{e.stopPropagation();if(!confirm('Delete this chat?'))return;S.data.chats=S.data.chats.filter(x=>x.id!==c.id);if(cur===c.id)cur=S.data.chats[0]?.id||null;drawList();drawMsgs();persist()};l.appendChild(d)})}
+function drawList(){const l=$('#list');l.innerHTML='';S.data.chats.forEach(c=>{const d=document.createElement('div');d.className='ci'+(c.id===cur?' on':'');d.innerHTML=`<span dir="auto">${esc(c.title)}</span><button aria-label="حذف">✕</button>`;d.onclick=()=>{cur=c.id;drawList();drawMsgs();$('#side').classList.remove('open')};d.querySelector('button').onclick=e=>{e.stopPropagation();if(!confirm('حذف المحادثة؟'))return;S.data.chats=S.data.chats.filter(x=>x.id!==c.id);if(cur===c.id)cur=S.data.chats[0]?.id||null;drawList();drawMsgs();persist()};l.appendChild(d)})}
 function drawMsgs(){
   const box=$('#msgs'),c=cur&&chatOf(cur);box.innerHTML='';
-  if(!c||!c.msgs.length){box.innerHTML='<div class="empty"><h2>Ask YH AI anything</h2><p>Any language. Pick a skill above for scripts, debugging, translation or research. Add your API keys in ⚙ Settings to start.</p></div>';return}
+  if(!c||!c.msgs.length){box.innerHTML='<div class="empty"><h2>اسأل YH AI أي شي</h2><p>بأي لغة. اختر مهارة من فوق للسكربتات أو التصحيح أو الترجمة أو البحث.</p></div>';return}
   c.msgs.forEach(m=>{const r=document.createElement('div');r.className='row';
     r.innerHTML=m.role==='user'?`<div class="u" dir="auto">${md(m.content)}</div>`:`<div class="a"><div class="who">YH AI</div><div dir="auto" class="${m.err?'err':''}">${md(m.content)}</div></div>`;
     box.appendChild(r)});
   box.scrollTop=box.scrollHeight;
 }
-$('#msgs').onclick=e=>{const b=e.target.closest('.cp');if(!b)return;navigator.clipboard.writeText(b.closest('.cb').querySelector('code').textContent);b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1200)};
+$('#msgs').onclick=e=>{const b=e.target.closest('.cp');if(!b)return;navigator.clipboard.writeText(b.closest('.cb').querySelector('code').textContent);b.textContent='تم النسخ';setTimeout(()=>b.textContent='نسخ',1200)};
 
 async function send(){
   if(busy||!S)return;const inp=$('#inp'),txt=inp.value.trim();if(!txt)return;
-  if(cool>Date.now()){$('#note').textContent=`Cooling down for ${Math.ceil((cool-Date.now())/1000)}s. Keep it respectful.`;return}
+  if(cool>Date.now()){$('#note').textContent=`الدردشة متوقفة ${Math.ceil((cool-Date.now())/1000)} ثانية. التزم بالأدب.`;return}
   $('#note').textContent='';
-  if(!cur)newChat();const c=chatOf(cur);
-  const bad=insult(txt);
-  if(bad){const now=Date.now();S.data.strikes=S.data.strikes.filter(t=>now-t<600000);S.data.strikes.push(now);if(S.data.strikes.length>=3){cool=now+120000;S.data.strikes=[];$('#note').textContent='Repeated abuse detected: chat paused for 2 minutes.'}}
+  if(!cur)newChat();const c=chatOf(cur),bad=insult(txt);
+  if(bad){const now=Date.now();S.data.strikes=S.data.strikes.filter(t=>now-t<600000);S.data.strikes.push(now);if(S.data.strikes.length>=3){cool=now+120000;S.data.strikes=[];$('#note').textContent='تكرر السب: توقفت الدردشة دقيقتين.'}}
   c.msgs.push({role:'user',content:txt});if(c.msgs.length===1)c.title=txt.slice(0,40);
   inp.value='';inp.style.height='auto';busy=true;$('#send').disabled=true;drawList();drawMsgs();
-  const tmp=document.createElement('div');tmp.className='row';tmp.innerHTML='<div class="a"><div class="who" style="color:var(--mute)">YH AI is thinking...</div></div>';$('#msgs').appendChild(tmp);$('#msgs').scrollTop=1e9;
+  const tmp=document.createElement('div');tmp.className='row';tmp.innerHTML='<div class="a"><div class="who" style="color:var(--mute)">YH AI يفكر...</div></div>';$('#msgs').appendChild(tmp);$('#msgs').scrollTop=1e9;
   const cf=S.data.cfg,h=c.msgs.map(m=>({role:m.role,content:m.content})),sys=system(bad?ROAST:''),srch=cf.search||cf.skill==='research';
-  const jobs=[];if(S.data.keys.a)jobs.push(askA(h,sys));if(S.data.keys.b)jobs.push(askB(h,sys,srch));
-  if(!jobs.length)jobs.push(Promise.reject(Error('No API key yet. Open ⚙ Settings and add at least one engine key.')));
+  const jobs=[];if(hasA())jobs.push(askA(h,sys));if(hasB())jobs.push(askB(h,sys,srch));
+  if(!jobs.length)jobs.push(Promise.reject(Error(NOKEY)));
   const rs=await Promise.allSettled(jobs);
-  const ok=rs.filter(r=>r.status==='fulfilled'&&r.value).map(r=>r.value),errs=rs.filter(r=>r.status==='rejected').map(r=>r.reason.message);
+  const ok=rs.filter(r=>r.status==='fulfilled'&&r.value).map(r=>r.value),errs=[...new Set(rs.filter(r=>r.status==='rejected').map(r=>r.reason.message===NOKEY?NOKEY_MSG:r.reason.message))];
   let content=ok[0]||null,err=false;
   if(ok.length===2&&!bad){
     try{content=await quick(`User question:\n${txt}\n\nDraft 1:\n${ok[0]}\n\nDraft 2:\n${ok[1]}\n\nWrite the single best final answer: combine the strengths, resolve any contradictions by choosing the more accurate claim, and keep it clear and complete. Reply in the user's language. Output only the answer; never mention drafts or engines.`,'You are a meticulous editor.',false)||ok[0]}catch{content=ok[0]}
   }
-  if(!content){content=errs.join('\n')||'No response received.';err=true}
+  if(!content){content=errs.join('\n')||'ما وصل رد.';err=true}
   c.msgs.push({role:'assistant',content,err});busy=false;$('#send').disabled=false;drawMsgs();persist();
   if(!err&&!bad)learnChat(txt,content);
 }
@@ -297,8 +336,7 @@ $('#oSearch').onchange=e=>{S.data.cfg.search=e.target.checked;persist()};
 $('#oDeep').onchange=e=>{S.data.cfg.deep=e.target.checked;persist()};
 $('#oMem').onchange=e=>{S.data.cfg.memory=e.target.checked;persist()};
 
-/* ===== Learning ===== */
-const hasKey=()=>S&&(S.data.keys.a||S.data.keys.b);
+/* ===== التعلم ===== */
 const parseArr=o=>{try{return JSON.parse((o.match(/\[[\s\S]*\]/)||['[]'])[0]).filter(x=>typeof x==='string'&&x.length>5&&x.length<400)}catch{return[]}};
 function addTo(list,items,topic,cap){items.forEach(t=>{if(!list.some(m=>m.t.toLowerCase()===t.toLowerCase()))list.push({t,topic,ts:Date.now()})});while(list.length>cap)list.shift()}
 async function learnChat(q,a){
@@ -308,29 +346,31 @@ async function learnChat(q,a){
 }
 const TOPICS=['world news','science discoveries','technology and AI','space exploration','health and medicine','economy and markets','world history','geography and countries','culture and arts','sports','climate and environment','programming and software','cybersecurity','languages and linguistics','philosophy and ideas','mathematics','music and film','gaming','food and travel','law and politics','psychology','engineering inventions','animals and nature','education'];
 async function learnWorld(manual){
-  if(learning||!hasKey()||!S)return false;learning=true;$('#lst').textContent='Learning...';
+  if(learning||!S||!hasKey())return false;learning=true;$('#lst').textContent='يتعلم...';
   try{
     const recent=S.data.know.slice(-TOPICS.length).map(k=>k.topic),pool=TOPICS.filter(t=>!recent.includes(t)),topic=(pool.length?pool:TOPICS)[Math.floor(Math.random()*(pool.length||TOPICS.length))];
-    const out=await quick(`Today is ${today()}. Using the most up-to-date information available, give 3 distinct, concise, factual items (facts or recent developments) about: ${topic}. Each item at most 200 characters, self-contained and accurate. Reply with ONLY a JSON array of strings.`,'You are a careful researcher. JSON only.',!!S.data.keys.b);
+    const out=await quick(`Today is ${today()}. Using the most up-to-date information available, give 3 distinct, concise, factual items (facts or recent developments) about: ${topic}. Each item at most 200 characters, self-contained and accurate. Reply with ONLY a JSON array of strings.`,'You are a careful researcher. JSON only.',hasB());
     if(!S)return false;const items=parseArr(out).slice(0,3);addTo(S.data.know,items,topic,250);S.data.cfg.lastLearn=Date.now();drawMemN();persist();
-    $('#lst').textContent=items.length?`Learned: ${topic}`:'';return items.length>0;
-  }catch(e){$('#lst').textContent=manual?'Learning failed: '+e.message:'';return false}finally{learning=false}
+    $('#lst').textContent=items.length?`تعلّم: ${topic}`:'';return items.length>0;
+  }catch(e){$('#lst').textContent=manual?'فشل التعلم: '+(e.message===NOKEY?'ما فيه ربط':e.message):'';return false}finally{learning=false}
 }
 setInterval(()=>{if(S&&S.data.cfg.autolearn&&!busy&&Date.now()-S.data.cfg.lastLearn>Math.max(5,S.data.cfg.learnMin)*60000)learnWorld(false)},60000);
 
 const drawMemN=()=>$('#memN').textContent=S.data.memory.length+S.data.know.length;
-function drawList2(el,arr,empty){el.innerHTML=arr.length?'':`<p class="fine">${empty}</p>`;arr.forEach((m,i)=>{const d=document.createElement('div');d.className='mem';d.innerHTML=`<span dir="auto">${esc(m.t)}${m.topic?`<small>${esc(m.topic)}</small>`:''}</span><button aria-label="Delete">✕</button>`;d.querySelector('button').onclick=()=>{arr.splice(i,1);drawMemL();drawMemN();persist()};el.appendChild(d)})}
-function drawMemL(){drawList2($('#knL'),S.data.know,'Nothing learned yet. Turn on auto-learning or press the button above.');drawList2($('#memL'),S.data.memory,'Nothing yet. Chat and YH AI will remember what matters.')}
+function drawList2(el,arr,empty){el.innerHTML=arr.length?'':`<p class="fine">${empty}</p>`;arr.forEach((m,i)=>{const d=document.createElement('div');d.className='mem';d.innerHTML=`<span dir="auto">${esc(m.t)}${m.topic?`<small dir="ltr">${esc(m.topic)}</small>`:''}</span><button aria-label="حذف">✕</button>`;d.querySelector('button').onclick=()=>{arr.splice(i,1);drawMemL();drawMemN();persist()};el.appendChild(d)})}
+function drawMemL(){drawList2($('#knL'),S.data.know,'ما تعلم شي بعد. فعّل التعلم التلقائي أو اضغط الزر فوق.');drawList2($('#memL'),S.data.memory,'ما فيه شي بعد. سولف وبيحفظ المهم.')}
 $('#memB').onclick=()=>{drawMemL();$('#dMem').showModal()};$('#mClose').onclick=()=>$('#dMem').close();
-$('#learnNow').onclick=async()=>{const b=$('#learnNow');b.disabled=true;b.textContent='Learning...';await learnWorld(true);b.disabled=false;b.textContent='Learn something new now';if(S)drawMemL()};
-$('#mClear').onclick=()=>{if(confirm('Clear all memory and knowledge?')){S.data.memory=[];S.data.know=[];drawMemL();drawMemN();persist()}};
+$('#learnNow').onclick=async()=>{const b=$('#learnNow');b.disabled=true;b.textContent='يتعلم...';await learnWorld(true);b.disabled=false;b.textContent='تعلّم شي جديد الحين';if(S)drawMemL()};
+$('#mClear').onclick=()=>{if(confirm('مسح كل الذاكرة والمعرفة؟')){S.data.memory=[];S.data.know=[];drawMemL();drawMemN();persist()}};
 
-/* ===== Settings ===== */
-$('#setB').onclick=()=>{const d=S.data;$('#kA').value=d.keys.a;$('#kB').value=d.keys.b;$('#mA').value=d.cfg.modelA;$('#mB').value=d.cfg.modelB;$('#sys').value=d.cfg.system;$('#oAuto').checked=d.cfg.autolearn;$('#lmin').value=d.cfg.learnMin;$('#dSet').showModal()};
+/* ===== الإعدادات ===== */
+$('#setB').onclick=()=>{const d=S.data;$('#link').textContent=linked()?'✓ الربط التلقائي شغال: ما تحتاج تحط أي مفتاح.':'الربط التلقائي غير مفعّل بعد (صاحب الموقع يحط PROXY). تقدر تستخدم مفاتيحك الخاصة من الأسفل.';$('#kA').value=d.keys.a;$('#kB').value=d.keys.b;$('#mA').value=d.cfg.modelA;$('#mB').value=d.cfg.modelB;$('#sys').value=d.cfg.system;$('#oAuto').checked=d.cfg.autolearn;$('#lmin').value=d.cfg.learnMin;$('#dSet').showModal()};
 $('#sClose').onclick=()=>$('#dSet').close();
-$('#sSave').onclick=()=>{const d=S.data,df=defaults().cfg;d.keys.a=$('#kA').value.trim();d.keys.b=$('#kB').value.trim();d.cfg.modelA=$('#mA').value.trim()||df.modelA;d.cfg.modelB=$('#mB').value.trim()||df.modelB;d.cfg.system=$('#sys').value.trim()||df.system;d.cfg.autolearn=$('#oAuto').checked;d.cfg.learnMin=Math.min(1440,Math.max(5,parseInt($('#lmin').value)||30));persist();$('#dSet').close()};
-$('#exp').onclick=async()=>{await seal(S.key,S.data).then(async v=>{const all=users();all[S.name].vault=v;saveUsers(all)});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({name:S.name,user:users()[S.name]})],{type:'application/json'}));a.download=`yhai-backup-${S.name}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
-$('#delAcc').onclick=()=>{if(!confirm('Permanently delete this account and all its data?'))return;const a=users();delete a[S.name];saveUsers(a);logout()};
+$('#sSave').onclick=()=>{const d=S.data,df=defaults().cfg;d.keys.a=$('#kA').value.trim();d.keys.b=$('#kB').value.trim();d.cfg.modelA=$('#mA').value.trim()||df.modelA;d.cfg.modelB=$('#mB').value.trim()||df.modelB;d.cfg.system=$('#sys').value.trim()||df.system;d.cfg.autolearn=$('#oAuto').checked;d.cfg.learnMin=Math.min(1440,Math.max(5,parseInt($('#lmin').value)||60));persist();$('#dSet').close()};
+$('#exp').onclick=async()=>{await flush();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({name:S.name,user:users()[S.name]})],{type:'application/json'}));a.download=`yhai-backup-${S.name}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+$('#delAcc').onclick=async()=>{if(!confirm('حذف الحساب وكل بياناته نهائيا؟'))return;const a=users();delete a[S.name];saveUsers(a);S.data=null;await sessDel();localStorage.removeItem('yhai_last');S=null;showAuth('تم حذف الحساب.')};
+
+restore();
 </script>
 </body>
 </html>
