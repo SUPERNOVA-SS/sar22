@@ -28,6 +28,16 @@ li button{background:none;border:1px solid var(--line);color:var(--ink);border-r
 li button.done{border-color:var(--hit);color:var(--hit)}
 .empty{color:var(--mute);padding:20px 0}
 .stat{margin-top:28px;color:var(--mute);font-size:.85rem}
+.gear{background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px 14px;font:inherit;cursor:pointer}
+dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:24px;max-width:440px;width:92%}
+dialog::backdrop{background:#000a}
+dialog label{display:block;margin:14px 0 6px;font-size:.9rem;color:var(--mute)}
+dialog input[type=text]{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;direction:ltr}
+dialog .chk{display:flex;gap:10px;align-items:flex-start;color:var(--ink);margin-top:16px}
+dialog .acts{display:flex;gap:10px;margin-top:20px}
+dialog .acts button{flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;cursor:pointer}
+dialog .acts .save{background:var(--hit);color:#05261a;border:0;font-weight:700}
+.chk-link{color:var(--hit);font-size:.85rem;margin-inline-start:10px}
 @media(max-width:520px){.platforms{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -48,41 +58,83 @@ li button.done{border-color:var(--hit);color:var(--hit)}
       <option value="0">أي طول</option><option>4</option><option>5</option><option>6</option><option>7</option>
     </select>
     <button class="go" id="go">بحث</button>
+    <button class="gear" id="gear" aria-label="الإعدادات">⚙ الإعدادات</button>
   </div>
   <p class="note" id="note"></p>
   <ul id="out"></ul>
   <p class="stat" id="stat"></p>
 </main>
+<dialog id="dlg">
+  <h2 style="margin:0 0 4px">الإعدادات</h2>
+  <p style="margin:0;color:var(--mute);font-size:.9rem">اختر كيف يشتغل الموقع.</p>
+  <label for="api">رابط الخادم (الباك اند)</label>
+  <input type="text" id="api" placeholder="https://your-app.onrender.com">
+  <label class="chk"><input type="checkbox" id="local"> <span>أسمح للموقع يشتغل بدون خادم (وضع محلي): يولّد يوزرات في متصفحي وأفحصها يدويا بنفسي. غير مؤكدة.</span></label>
+  <label class="chk"><input type="checkbox" id="auto"> <span>أسمح بالتحويل التلقائي للوضع المحلي إذا الخادم ما رد.</span></label>
+  <div class="acts"><button id="cancel">إلغاء</button><button class="save" id="save">حفظ</button></div>
+</dialog>
 <script>
-// ضع رابط الباك اند هنا بعد ما ترفعه (بدون / بالاخر)
-const API_BASE='https://YOUR-BACKEND.onrender.com';
-let platform='roblox';
 const $=s=>document.querySelector(s);
-const notes={roblox:'',discord:'ديسكورد ما يوفر فحص عام: اليوزرات هنا غير مؤكدة، جرّبها يدويا.',instagram:'الفحص تقريبي: تأكد قبل التسجيل.',tiktok:'الفحص تقريبي: تأكد قبل التسجيل.'};
+let platform='roblox';
+const cfg=Object.assign({api:'',local:false,auto:false},JSON.parse(localStorage.getItem('hh_cfg')||'{}'));
+const notes={roblox:'',discord:'ديسكورد ما يوفر فحص عام: اليوزرات غير مؤكدة، جرّبها يدويا.',instagram:'الفحص تقريبي: تأكد قبل التسجيل.',tiktok:'الفحص تقريبي: تأكد قبل التسجيل.'};
+const links={roblox:n=>`https://www.roblox.com/search/users?keyword=${n}`,tiktok:n=>`https://www.tiktok.com/@${n}`,instagram:n=>`https://www.instagram.com/${n}/`,discord:null};
+
+// مولد محلي (للوضع بدون خادم)
+const C='bcdfghjklmnprstvwxyz',V='aeiou',W=['nova','zero','void','flux','neon','ghost','storm','blaze','pixel','echo','onyx','rift','apex','volt','lynx','hex'];
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function gen(len){const t=Math.random();
+  if(t<.25)return(rnd(W)+rnd(W)).slice(0,Math.max(len,5));
+  if(t<.4){const al='abcdefghijklmnopqrstuvwxyz0123456789';let s=rnd(C);while(s.length<len)s+=rnd(al);return s}
+  let s='';while(s.length<len)s+=s.length%2?rnd(V):rnd(C);return s}
+function localSearch(len){const out=new Set();while(out.size<10)out.add(gen(len||4+Math.floor(Math.random()*3)));
+  return{results:[...out].map(name=>({name,verified:false})),remaining:null,local:true}}
+
 $('#plats').addEventListener('click',e=>{
-  const b=e.target.closest('button'); if(!b) return;
+  const b=e.target.closest('button');if(!b)return;
   platform=b.dataset.p;
   document.querySelectorAll('#plats button').forEach(x=>x.setAttribute('aria-pressed',x===b));
-  $('#note').textContent=notes[platform]; $('#out').innerHTML='';
+  $('#note').textContent=notes[platform];$('#out').innerHTML='';
 });
+
+// الإعدادات
+$('#gear').onclick=()=>{$('#api').value=cfg.api;$('#local').checked=cfg.local;$('#auto').checked=cfg.auto;$('#dlg').showModal()};
+$('#cancel').onclick=()=>$('#dlg').close();
+$('#save').onclick=()=>{
+  cfg.api=$('#api').value.trim().replace(/\/+$/,'');cfg.local=$('#local').checked;cfg.auto=$('#auto').checked;
+  localStorage.setItem('hh_cfg',JSON.stringify(cfg));$('#dlg').close();$('#note').textContent='تم حفظ الإعدادات.';
+};
+
+function render(j){
+  const ul=$('#out');ul.innerHTML='';
+  if(!j.results.length){ul.innerHTML='<p class="empty">المخزون فاضي حاليا، النظام يصيد. جرّب بعد ثواني.</p>';return}
+  j.results.forEach(x=>{
+    const li=document.createElement('li');
+    const l=!x.verified&&links[platform]?`<a class="chk-link" target="_blank" rel="noopener" href="${links[platform](x.name)}">تحقق</a>`:'';
+    li.innerHTML=`<span><code>${x.name}</code>${l}</span><button>نسخ</button>`;
+    const b=li.querySelector('button');
+    b.onclick=()=>{navigator.clipboard.writeText(x.name);b.textContent='تم النسخ';b.classList.add('done')};
+    ul.appendChild(li);
+  });
+  $('#stat').textContent=j.local?'وضع محلي: اليوزرات غير مؤكدة، افحصها بنفسك بزر "تحقق".':`المتبقي جاهز في المخزون: ${j.remaining}`;
+}
+
 $('#go').onclick=async()=>{
-  const btn=$('#go'); btn.disabled=true; btn.textContent='جاري البحث...';
+  const btn=$('#go'),len=$('#len').value;btn.disabled=true;btn.textContent='جاري البحث...';
   try{
-    const r=await fetch(`${API_BASE}/api/search?platform=${platform}&length=${$('#len').value}&count=10`);
-    const j=await r.json();
-    if(j.error){$('#out').innerHTML=`<p class="empty">${j.error}</p>`;return;}
-    const ul=$('#out'); ul.innerHTML='';
-    if(!j.results.length){ul.innerHTML='<p class="empty">المخزون فاضي حاليا، النظام يصيد. جرّب بعد ثواني.</p>';}
-    j.results.forEach(x=>{
-      const li=document.createElement('li');
-      li.innerHTML=`<code>${x.name}</code><button>نسخ</button>`;
-      const b=li.querySelector('button');
-      b.onclick=()=>{navigator.clipboard.writeText(x.name);b.textContent='تم النسخ';b.classList.add('done')};
-      ul.appendChild(li);
-    });
-    $('#stat').textContent=`المتبقي جاهز في المخزون: ${j.remaining}`;
-  }catch{ $('#out').innerHTML='<p class="empty">تعذر الاتصال بالخادم.</p>'; }
-  finally{btn.disabled=false;btn.textContent='بحث';}
+    if(!cfg.api){
+      if(cfg.local){render(localSearch(+len));return}
+      $('#out').innerHTML='<p class="empty">ما حددت رابط الخادم. افتح ⚙ الإعدادات وحط الرابط، أو فعّل الوضع المحلي.</p>';return}
+    try{
+      const r=await fetch(`${cfg.api}/api/search?platform=${platform}&length=${len}&count=10`);
+      const j=await r.json();
+      if(j.error){$('#out').innerHTML=`<p class="empty">${j.error}</p>`;return}
+      render(j);
+    }catch(err){
+      if(cfg.auto){render(localSearch(+len));$('#note').textContent='الخادم ما رد: تحوّلت للوضع المحلي.'}
+      else $('#out').innerHTML='<p class="empty">تعذر الاتصال بالخادم. تأكد من الرابط بالإعدادات وأن الخادم شغال، أو فعّل الوضع المحلي.</p>';
+    }
+  }finally{btn.disabled=false;btn.textContent='بحث'}
 };
 </script>
 </body>
