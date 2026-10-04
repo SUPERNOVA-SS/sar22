@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval' https://esm.run https://cdn.jsdelivr.net; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https:; img-src data:; worker-src blob:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https:; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https: blob: data:; img-src data: blob:; worker-src blob:; base-uri 'none'; form-action 'none'">
 <title>YH AI</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -108,7 +108,7 @@ details summary{cursor:pointer;color:var(--mute);font-size:.88rem;margin:10px 0}
     <div id="eng" class="hide"></div>
     <div id="msgs"></div>
     <div class="bar">
-      <div class="opts"><label><input type="checkbox" id="oSearch"> يبحث ويراجع معرفته قبل الرد</label><label><input type="checkbox" id="oDeep"> تفكير عميق (أبطأ وأدق)</label><label><input type="checkbox" id="oCrawl"> يدرس بالخلفية طول الوقت</label></div>
+      <div class="opts"><label><input type="checkbox" id="oSearch"> يبحث ويراجع معرفته قبل الرد</label><label><input type="checkbox" id="oDeep"> تفكير عميق (أبطأ وأدق)</label></div>
       <div class="msg warn" id="note" style="max-width:860px;margin:0 auto 4px;min-height:0"></div>
       <div><textarea id="inp" rows="1" placeholder="اكتب لـ YH AI بأي لغة... (Enter للإرسال)" maxlength="8000"></textarea><button class="btn pri" id="send">إرسال</button></div>
     </div>
@@ -120,24 +120,21 @@ details summary{cursor:pointer;color:var(--mute);font-size:.88rem;margin:10px 0}
   <h4>الذكاء</h4>
   <div class="fld"><label for="mdl">موديل الذكاء (يشتغل داخل جهازك)</label>
     <select id="mdl">
-      <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">سريع وخفيف (1.5B، حوالي 1 جيجا)</option>
+      <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">سريع وخفيف (1.5B، حوالي 1 جيجا) - الافتراضي</option>
       <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">متوازن وأقوى (3B، حوالي 2 جيجا)</option>
       <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">الأقوى (7B، يحتاج كرت شاشة قوي، حوالي 5 جيجا)</option>
       <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 (3B، بديل)</option>
     </select></div>
   <p class="fine" style="margin-top:0">تغيير الموديل يحتاج تحميل جديد أول مرة.</p>
   <div class="fld"><label for="xtra">تعليمات إضافية لشخصيته (اختياري)</label><textarea id="xtra" rows="3" placeholder="مثال: لا تستخدم إيموجي، كن مختصر..."></textarea></div>
-  <h4>الدراسة بالخلفية</h4>
-  <div class="fld"><label for="csec">يتعلم شي جديد كل (ثانية)</label><input type="text" class="en" id="csec" inputmode="numeric"></div>
   <h4>الحساب</h4>
   <div class="acts"><button class="btn" id="exp">تصدير نسخة احتياطية مشفرة</button><button class="btn dng" id="delAcc">حذف الحساب</button></div>
   <div class="acts"><button class="btn pri" id="sSave">حفظ</button><button class="btn" id="sClose">إغلاق</button></div>
 </dialog>
 <dialog id="dMem">
   <h3>المعرفة والذاكرة</h3>
-  <p class="fine" style="margin-top:0">كل ما يدرس مقال أو خبر أو يبحث لك، يحفظه هنا ويرجع له وقت الرد. <b id="kbc"></b></p>
-  <div class="acts" style="margin-top:0"><button class="btn pri" id="learnNow">ادرس شي جديد الحين</button></div>
-  <h4>آخر ما تعلمه</h4><div id="knL"></div>
+  <p class="fine" style="margin-top:0">يدرس تلقائي طول الوقت: كل مقال أو خبر يقرأه أو يبحث عنه لك ينحفظ هنا ويرجع له وقت الرد. <b id="kbc"></b></p>
+    <h4>آخر ما تعلمه</h4><div id="knL"></div>
   <h4>عنك (من كلامك)</h4><div id="memL"></div>
   <div class="acts"><button class="btn" id="mClose">إغلاق</button><button class="btn dng" id="clearKB">مسح المعرفة</button><button class="btn dng" id="clearMem">مسح الذاكرة</button></div>
 </dialog>
@@ -172,7 +169,7 @@ const sessGet=()=>idbOp('readonly',s=>s.get('session')).catch(()=>null);
 const sessSet=v=>idbOp('readwrite',s=>s.put(v,'session')).catch(()=>{});
 const sessDel=()=>idbOp('readwrite',s=>s.delete('session')).catch(()=>{});
 
-const defaults=()=>({cfg:{model:'Qwen2.5-3B-Instruct-q4f16_1-MLC',ready:false,extra:'',skill:'general',search:true,deep:false,crawl:true,crawlSec:90},chats:[],memory:[],strikes:[]});
+const defaults=()=>({cfg:{model:'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',ready:false,extra:'',skill:'general',search:true,deep:false,crawl:true},chats:[],memory:[],strikes:[]});
 let S=null,cur=null,busy=false,saveT,regMode=false,cool=0,learning=false;
 
 function strength(p){let s=0;if(p.length>=10)s++;if(p.length>=14)s++;if(/[a-z]/.test(p)&&/[A-Z]/.test(p))s++;if(/\d/.test(p))s++;if(/[^\w\s]/.test(p))s++;return s}
@@ -226,7 +223,7 @@ function start(name,key,data,verifiedAt,remember){
   if(remember)sessSet({name,key,verifiedAt});else sessDel();
   $('#pw').value=$('#pw2').value='';$('#amsg').textContent='';
   $('#auth').classList.add('hide');$('#app').classList.remove('hide');$('#who').textContent=name;
-  $('#skill').value=d.cfg.skill;$('#oSearch').checked=d.cfg.search;$('#oDeep').checked=d.cfg.deep;$('#oCrawl').checked=d.cfg.crawl;
+  $('#skill').value=d.cfg.skill;$('#oSearch').checked=d.cfg.search;$('#oDeep').checked=d.cfg.deep;
   cur=d.chats[0]?.id||null;drawList();drawMsgs();afterStart();
 }
 async function flush(){clearTimeout(saveT);if(!S)return;const all=users();if(all[S.name]){all[S.name].vault=await seal(S.key,S.data);saveUsers(all)}}
@@ -247,28 +244,33 @@ async function restore(){
 }
 
 /* ===== الذكاء المحلي: يشتغل داخل متصفحك بدون أي API أو مفاتيح ===== */
-let webllm=null,engine=null,engBusy=false,KB=[],KBM=new Map(),DF=new Map(),kbLoaded=false,crawlT=null,crawling=false,tick=0;
+let webllm=null,engine=null,KB=[],KBM=new Map(),DF=new Map(),kbLoaded=false,crawlT=null,crawling=false,tick=0;
 const hasGPU=()=>!!navigator.gpu;
-function showEng(t,p){const e=$('#eng');e.classList.remove('hide');e.innerHTML=`<div>${esc(t)}</div>${p==null?'':`<div class="pg"><b style="width:${Math.round(p*100)}%"></b></div>`}`}
+const engSubs=new Set();let engP=null;
+function showEng(t,p){const e=$('#eng');e.classList.remove('hide');e.innerHTML=`<div>${esc(t)}</div>${p==null?'':`<div class="pg"><b style="width:${Math.round(p*100)}%"></b></div>`}`;engSubs.forEach(f=>f(t,p))}
 function hideEng(){$('#eng').classList.add('hide')}
+const withTimeout=(p,ms,msg)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(Error(msg)),ms))]);
+async function gpuOK(){try{return !!(navigator.gpu&&await withTimeout(navigator.gpu.requestAdapter(),8000,'gpu'))}catch{return false}}
 function banner(){
-  if(engine||engBusy||!S)return;const e=$('#eng');e.classList.remove('hide');
+  if(engine||engP||!S)return;const e=$('#eng');e.classList.remove('hide');
   if(!hasGPU()){e.innerHTML='<b>متصفحك ما يدعم WebGPU</b><p class="fine">الذكاء المحلي يحتاج Chrome أو Edge حديث على جهاز قوي. بهالوضع أقدر أبحث لك وأعرض أقرب المعلومات بس.</p>';return}
-  e.innerHTML='<b>شغّل ذكاء YH AI</b><p class="fine">يشتغل بالكامل داخل جهازك، بدون مفاتيح ولا اشتراكات. أول مرة بس يحمّل الموديل (من 1 إلى 3 جيجا) وبعدها يتخزن ويشتغل بسرعة.</p><button class="btn pri" id="engGo">تشغيل الذكاء الآن</button>';
-  $('#engGo').onclick=()=>loadEngine().catch(er=>showEng('فشل التشغيل: '+er.message+' (جرّب موديل أصغر من الإعدادات)'));
+  e.innerHTML='<b>شغّل ذكاء YH AI</b><p class="fine">يشتغل بالكامل داخل جهازك، بدون مفاتيح ولا اشتراكات. أول مرة بس يحمّل الموديل (حوالي 1 جيجا) وبعدها يتخزن ويشتغل بسرعة.</p><button class="btn pri" id="engGo">تشغيل الذكاء الآن</button>';
+  $('#engGo').onclick=()=>loadEngine().catch(er=>showEng(er.message==='NOGPU'?'كرت الشاشة/المتصفح ما يدعم WebGPU فعليا.':'فشل التشغيل: '+er.message+' (جرّب موديل أصغر من الإعدادات)'));
 }
-async function loadEngine(){
-  if(engine)return engine;if(engBusy)throw Error('الذكاء قيد التشغيل، انتظر شوي');
-  if(!hasGPU())throw Error('NOGPU');
-  engBusy=true;
-  try{
-    webllm=webllm||await import('https://esm.run/@mlc-ai/web-llm');
+function loadEngine(){
+  if(engine)return Promise.resolve(engine);
+  if(engP)return engP;
+  engP=(async()=>{
+    if(!(await gpuOK()))throw Error('NOGPU');
+    showEng('جاري تحميل مكتبة الذكاء...',0);
+    webllm=webllm||await withTimeout(import('https://esm.run/@mlc-ai/web-llm'),90000,'تعذر تحميل مكتبة الذكاء. تأكد من الإنترنت وجرّب مرة ثانية.');
     const list=webllm.prebuiltAppConfig.model_list.map(m=>m.model_id),want=S.data.cfg.model;
-    const id=list.includes(want)?want:(list.find(x=>/Qwen2\.5-3B-Instruct-q4f16/.test(x))||list.find(x=>/Qwen2\.5-1\.5B-Instruct-q4f16/.test(x))||list[0]);
-    showEng('جاري تجهيز الذكاء...',0);
+    const id=list.includes(want)?want:(list.find(x=>/Qwen2\.5-1\.5B-Instruct-q4f16/.test(x))||list.find(x=>/Qwen2\.5-3B-Instruct-q4f16/.test(x))||list[0]);
+    showEng('جاري تجهيز الذكاء (أول مرة بس يحمّل الملفات)...',0);
     engine=await webllm.CreateMLCEngine(id,{initProgressCallback:p=>showEng(p.text||'جاري التحميل...',p.progress||0)});
     S.data.cfg.ready=true;persist();hideEng();$('#est').textContent='الذكاء جاهز ✓';return engine;
-  }catch(e){engine=null;throw e}finally{engBusy=false}
+  })().catch(e=>{engine=null;throw e}).finally(()=>{engP=null});
+  return engP;
 }
 
 /* ===== قاعدة المعرفة (IndexedDB) + بحث BM25 ===== */
@@ -329,15 +331,16 @@ async function so(q){
 /* ===== الدراسة بالخلفية ===== */
 const lastTopics=()=>{const u=S.data.chats.flatMap(c=>c.msgs).filter(m=>m.role==='user').pop();return u?wq(u.content):''};
 async function crawlOnce(manual){
-  if(crawling||!S)return;crawling=true;$('#lst').textContent='يدرس...';
+  if(crawling||!S)return;crawling=true;$('#lst').textContent='يدرس تلقائي...';
   try{
     const sd=lastTopics(),ar=/[\u0600-\u06FF]/.test(sd);
     const steps=[()=>wikiRandom('ar'),()=>wikiRandom('en'),itn,()=>sd?wikiSearch(sd,ar?'ar':'en',2):wikiRandom('en'),otd,()=>wikiRandom('ar'),hn,()=>sd?wikiSearch(sd,ar?'ar':'en',3):wikiRandom('en')];
     const n=await addKB(await steps[tick++%steps.length]());
-    $('#lst').textContent=`معرفتي: ${KB.length}`+(manual?` (+${n})`:'');
-  }catch(e){$('#lst').textContent=manual?'تعذر التعلم: '+e.message:`معرفتي: ${KB.length}`}finally{crawling=false}
+    $('#lst').textContent=`يدرس تلقائي • معرفتي: ${KB.length}`;
+  }catch(e){$('#lst').textContent=`معرفتي: ${KB.length}`}finally{crawling=false}
 }
-function startCrawlTimer(){clearInterval(crawlT);crawlT=setInterval(()=>{if(S&&S.data.cfg.crawl)crawlOnce()},Math.max(30,S.data.cfg.crawlSec)*1000)}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function startCrawlTimer(){clearInterval(crawlT);crawlT=setInterval(()=>{if(S)crawlOnce()},45000)}
 
 /* ===== البحث قبل الرد + الأدوات ===== */
 async function gather(txt,code){
@@ -427,12 +430,15 @@ async function send(){
   if(cl)tools.push('Calculator: '+cl);
   if(TIMEQ.test(norm(txt)))tools.push('Current local date and time: '+new Date().toLocaleString('en-GB',{dateStyle:'full',timeStyle:'short'})+' ('+Intl.DateTimeFormat().resolvedOptions().timeZone+')');
   let g={ctx:'',sources:[],docs:[]};
-  if(!bad&&cf.search&&!tools.length&&!(GREET.test(txt)&&txt.length<40)&&cf.skill!=='translate'){body.textContent='يبحث ويراجع معرفته...';try{g=await gather(txt,CODE.test(txt)||['script','debug'].includes(cf.skill))}catch{}}
+  if(!bad&&cf.search&&!tools.length&&!(GREET.test(txt)&&txt.length<40)&&cf.skill!=='translate'){body.textContent='يبحث ويراجع معرفته...';try{g=await withTimeout(gather(txt,CODE.test(txt)||['script','debug'].includes(cf.skill)),15000,'t')}catch{}}
   let out='',err=false;
   try{
     if(!hasGPU())throw Error('NOGPU');
-    const e=await loadEngine();body.style.color='';body.textContent='';
-    const st=await e.chat.completions.create({messages:buildMsgs(c,txt,g.ctx,tools,bad),stream:true,temperature:bad?0.8:cf.deep?0.3:0.5,top_p:0.9,max_tokens:cf.deep?1500:1000,frequency_penalty:0.25});
+    const sub=(t,p)=>{body.innerHTML=(p!=null&&p<1?`يحمّل الذكاء (أول مرة بس): ${Math.round(p*100)}%<br>`:'')+esc(t)};
+    if(!engine){body.textContent='جاري تجهيز الذكاء... أول مرة بس ياخذ وقت (تحميل الموديل).';engSubs.add(sub)}
+    let e;try{e=await loadEngine()}finally{engSubs.delete(sub)}
+    body.style.color='';body.textContent='يكتب الرد...';
+    const st=await withTimeout(e.chat.completions.create({messages:buildMsgs(c,txt,g.ctx,tools,bad),stream:true,temperature:bad?0.8:cf.deep?0.3:0.5,top_p:0.9,max_tokens:cf.deep?1500:1000,frequency_penalty:0.25}),120000,'الذكاء ما رد خلال دقيقتين. جرّب موديل أصغر من الإعدادات.');
     let last=0;for await(const ch of st){out+=ch.choices[0]?.delta?.content||'';if(Date.now()-last>90){body.innerHTML=md(out);box.scrollTop=1e9;last=Date.now()}}
   }catch(er){
     if(er.message==='NOGPU'){const x=[...tools.map(t=>'• '+t),...g.docs.slice(0,3).map(d=>`**${d.title}**\n${d.text.slice(0,420)}`)].join('\n\n');out='ذكاء المحادثة ما يشتغل على متصفحك (يحتاج WebGPU). هذا أقرب اللي لقيته:\n\n'+(x||'ما لقيت شي.')}
@@ -447,7 +453,6 @@ $('#inp').addEventListener('input',e=>{e.target.style.height='auto';e.target.sty
 $('#skill').onchange=e=>{S.data.cfg.skill=e.target.value;persist()};
 $('#oSearch').onchange=e=>{S.data.cfg.search=e.target.checked;persist()};
 $('#oDeep').onchange=e=>{S.data.cfg.deep=e.target.checked;persist()};
-$('#oCrawl').onchange=e=>{S.data.cfg.crawl=e.target.checked;persist()};
 
 /* ===== ذاكرة عنك (من كلامك) ===== */
 const FACTS=[[/(?:^|\s)(?:اسمي|ناديني)\s+([\p{L}]{2,20})/u,n=>`اسم المستخدم: ${n}`],[/(?:^|\s)(?:انا من|اسكن في|ساكن في)\s+([\p{L} ]{2,25})/u,n=>`المستخدم من/يسكن في: ${n}`],[/(?:^|\s)(?:احب|أحب)\s+([\p{L} ]{2,30})/u,n=>`المستخدم يحب: ${n}`],[/my name is\s+([A-Za-z]{2,20})/i,n=>`User's name: ${n}`],[/i (?:live in|am from|'m from)\s+([A-Za-z ]{2,25})/i,n=>`User lives in/is from: ${n}`],[/i (?:like|love)\s+([A-Za-z ]{2,30})/i,n=>`User likes: ${n}`]];
@@ -461,25 +466,24 @@ function drawMemL(){
   S.data.memory.forEach((x,i)=>{const e=document.createElement('div');e.className='mem';e.innerHTML=`<span dir="auto">${esc(x.t)}</span><button aria-label="حذف">✕</button>`;e.querySelector('button').onclick=()=>{S.data.memory.splice(i,1);drawMemL();drawMemN();persist()};m.appendChild(e)});
 }
 $('#memB').onclick=()=>{drawMemL();$('#dMem').showModal()};$('#mClose').onclick=()=>$('#dMem').close();
-$('#learnNow').onclick=async()=>{const b=$('#learnNow');b.disabled=true;b.textContent='يدرس...';await crawlOnce(true);b.disabled=false;b.textContent='ادرس شي جديد الحين';if(S)drawMemL()};
 $('#clearKB').onclick=async()=>{if(!confirm('مسح كل المعرفة اللي تعلمها؟'))return;KB=[];KBM.clear();DF=new Map();await kbClear();drawMemL();drawMemN()};
 $('#clearMem').onclick=()=>{if(confirm('مسح الذاكرة الشخصية؟')){S.data.memory=[];drawMemL();drawMemN();persist()}};
 
 /* ===== الإعدادات ===== */
-$('#setB').onclick=()=>{const c=S.data.cfg;$('#mdl').value=c.model;if(!$('#mdl').value)$('#mdl').selectedIndex=1;$('#xtra').value=c.extra;$('#csec').value=c.crawlSec;$('#dSet').showModal()};
+$('#setB').onclick=()=>{const c=S.data.cfg;$('#mdl').value=c.model;if(!$('#mdl').value)$('#mdl').selectedIndex=0;$('#xtra').value=c.extra;$('#dSet').showModal()};
 $('#sClose').onclick=()=>$('#dSet').close();
 $('#sSave').onclick=async()=>{
   const c=S.data.cfg,m=$('#mdl').value,changed=m!==c.model;
-  c.extra=$('#xtra').value.trim();c.crawlSec=Math.min(3600,Math.max(30,parseInt($('#csec').value)||90));c.model=m;
+  c.extra=$('#xtra').value.trim();c.model=m;
   if(changed){try{await engine?.unload()}catch{}engine=null;c.ready=false;$('#est').textContent='الذكاء غير مشغّل';banner()}
-  persist();startCrawlTimer();$('#dSet').close();
+  persist();$('#dSet').close();
 };
 $('#exp').onclick=async()=>{await flush();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({name:S.name,user:users()[S.name]})],{type:'application/json'}));a.download=`yhai-backup-${S.name}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
 $('#delAcc').onclick=async()=>{if(!confirm('حذف الحساب وكل بياناته نهائيا؟'))return;const a=users();delete a[S.name];saveUsers(a);await sessDel();localStorage.removeItem('yhai_last');showAuth('تم حذف الحساب.')};
 
 async function afterStart(){
   await loadKB();if(!S)return;drawMemN();$('#lst').textContent=`معرفتي: ${KB.length}`;
-  startCrawlTimer();setTimeout(()=>{if(S&&S.data.cfg.crawl)crawlOnce()},4000);
+  startCrawlTimer();(async()=>{for(let k=0;k<4&&S;k++){await crawlOnce();await sleep(1500)}})();
   if(S.data.cfg.ready&&hasGPU()){$('#est').textContent='يجهّز الذكاء...';loadEngine().catch(()=>banner())}else{$('#est').textContent='الذكاء غير مشغّل';banner()}
 }
 restore();
