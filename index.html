@@ -3,139 +3,284 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>صيّاد اليوزرات</title>
-<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.openai.com https://generativelanguage.googleapis.com; base-uri 'none'; form-action 'none'">
+<title>توأم: دردشة بذكاءين</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0e1116;--panel:#171b23;--line:#262c38;--ink:#e8ecf3;--mute:#8a94a7;--hit:#3ddc97;--warn:#f5b84b}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Readex Pro',system-ui,sans-serif;min-height:100vh}
-main{max-width:760px;margin:0 auto;padding:48px 20px 80px}
-h1{font-size:clamp(2rem,6vw,3.2rem);margin:0 0 8px;font-weight:700;letter-spacing:-.5px}
-.sub{color:var(--mute);margin:0 0 32px}
-.platforms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.platforms button{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:14px 6px;border-radius:10px;font:inherit;cursor:pointer}
-.platforms button[aria-pressed=true]{border-color:var(--hit);box-shadow:inset 0 0 0 1px var(--hit)}
-.row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
-select{background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:12px;border-radius:10px;font:inherit}
-.go{flex:1;min-width:160px;background:var(--hit);color:#05261a;border:0;padding:14px 20px;border-radius:10px;font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer}
-.go:disabled{opacity:.6;cursor:wait}
-button:focus-visible,select:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
-.note{font-size:.85rem;color:var(--warn);min-height:1.3em;margin:0 0 12px}
-ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
-li{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
-li code{font-family:'JetBrains Mono',monospace;font-size:1.1rem;direction:ltr}
-li button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
-li button.done{border-color:var(--hit);color:var(--hit)}
-.empty{color:var(--mute);padding:20px 0}
-.stat{margin-top:28px;color:var(--mute);font-size:.85rem}
-.gear{background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px 14px;font:inherit;cursor:pointer}
-dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:24px;max-width:440px;width:92%}
-dialog::backdrop{background:#000a}
-dialog label{display:block;margin:14px 0 6px;font-size:.9rem;color:var(--mute)}
-dialog input[type=text]{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;direction:ltr}
-dialog .chk{display:flex;gap:10px;align-items:flex-start;color:var(--ink);margin-top:16px}
-dialog .acts{display:flex;gap:10px;margin-top:20px}
-dialog .acts button{flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;cursor:pointer}
-dialog .acts .save{background:var(--hit);color:#05261a;border:0;font-weight:700}
-.chk-link{color:var(--hit);font-size:.85rem;margin-inline-start:10px}
-@media(max-width:520px){.platforms{grid-template-columns:repeat(2,1fr)}}
+:root{--bg:#0f1115;--p:#171a21;--p2:#1e222b;--line:#2a2f3b;--ink:#e9ecf2;--mute:#8b93a5;--gpt:#2dd4a7;--gem:#8ea2ff;--mrg:#f2c14e;--err:#ff6b6b}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 'IBM Plex Sans Arabic',system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--mrg);outline-offset:2px}
+.hide{display:none!important}
+.btn{background:var(--p2);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+.btn.pri{background:var(--mrg);color:#1b1500;border:0;font-weight:700}
+.btn.dng{border-color:var(--err);color:var(--err)}
+.btn:disabled{opacity:.6;cursor:wait}
+input[type=text],input[type=password],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input[dir=ltr],textarea[dir=ltr]{direction:ltr;text-align:left}
+#auth{min-height:100%;display:grid;place-items:center;padding:20px}
+.card{width:100%;max-width:410px;background:var(--p);border:1px solid var(--line);border-radius:18px;padding:28px}
+.brand{display:flex;align-items:center;gap:10px;font-size:1.6rem;font-weight:700;margin-bottom:4px}
+.dots{display:inline-flex}.dots i{width:18px;height:18px;border-radius:50%;display:block}
+.dots i:first-child{background:var(--gpt)}.dots i:last-child{background:var(--gem);margin-inline-start:-6px;mix-blend-mode:screen}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:18px 0}
+.tabs button{padding:9px;border-radius:10px;border:1px solid var(--line);background:none}
+.tabs button[aria-selected=true]{background:var(--p2);border-color:var(--mrg)}
+.fld{margin-bottom:12px}.fld label{display:block;font-size:.85rem;color:var(--mute);margin-bottom:4px}
+.meter{height:5px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}
+.meter b{display:block;height:100%;width:0;transition:width .2s,background .2s}
+.msg{min-height:1.4em;font-size:.88rem;color:var(--err);margin:8px 0}
+.fine{font-size:.78rem;color:var(--mute);margin-top:14px}
+#app{height:100%;display:grid;grid-template-columns:270px 1fr}
+aside{background:var(--p);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside header{padding:14px;display:flex;flex-direction:column;gap:8px}
+#list{flex:1;overflow:auto;padding:0 10px}
+.ci{display:flex;justify-content:space-between;gap:6px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:.92rem}
+.ci:hover,.ci.on{background:var(--p2)}.ci span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci button{background:none;border:0;color:var(--mute)}
+aside footer{padding:12px;border-top:1px solid var(--line);display:grid;gap:8px}
+main{display:flex;flex-direction:column;min-height:0}
+.top{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.top select{width:auto;flex:0 1 230px}.top .sp{flex:1}
+#menu{display:none}
+#msgs{flex:1;overflow:auto;padding:20px 16px}
+.row{max-width:860px;margin:0 auto 18px}
+.u{background:var(--p2);border-radius:14px;padding:10px 14px;width:fit-content;max-width:85%;margin-inline-start:auto}
+.a{border-inline-start:3px solid var(--c,var(--line));padding:2px 14px}
+.a .who{font-size:.78rem;color:var(--c);margin-bottom:2px;font-weight:500}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cols .a{background:var(--p);border-radius:12px;padding:10px 14px}
+details{margin-top:10px}summary{cursor:pointer;color:var(--mute);font-size:.85rem}
+.err{color:var(--err)}
+pre{direction:ltr;text-align:left;background:#0a0c10;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em}.a code,.u code{background:#0a0c10;padding:1px 5px;border-radius:5px}pre code{padding:0!important;background:none!important}
+.empty{max-width:520px;margin:12vh auto 0;text-align:center;color:var(--mute)}
+.empty h2{color:var(--ink);margin:0 0 6px}
+.bar{padding:12px 16px 18px;border-top:1px solid var(--line)}
+.bar>div{max-width:860px;margin:0 auto;display:flex;gap:10px;align-items:flex-end}
+.bar textarea{resize:none;max-height:180px}
+.bar .opts{max-width:860px;margin:0 auto 8px;display:flex;gap:16px;font-size:.84rem;color:var(--mute);flex-wrap:wrap}
+.opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+dialog{background:var(--p);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:22px;width:min(520px,94%);max-height:90vh;overflow:auto}
+dialog::backdrop{background:#000b}
+dialog h3{margin:0 0 12px}.acts{display:flex;gap:8px;margin-top:16px}
+.mem{display:flex;gap:8px;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.mem button{background:none;border:0;color:var(--err)}
+@media(max-width:800px){#app{grid-template-columns:1fr}aside{position:fixed;top:0;bottom:0;right:0;width:280px;z-index:5;transform:translateX(105%);transition:transform .2s}aside.open{transform:none}#menu{display:block}.cols{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<main>
-  <h1>صيّاد اليوزرات</h1>
-  <p class="sub">نظام يصيد يوزرات متاحة بالخلفية طول الوقت. تضغط بحث وتاخذها جاهزة.</p>
 
-  <div class="platforms" id="plats">
-    <button data-p="roblox" aria-pressed="true">روبلوكس</button>
-    <button data-p="discord" aria-pressed="false">ديسكورد</button>
-    <button data-p="instagram" aria-pressed="false">انستقرام</button>
-    <button data-p="tiktok" aria-pressed="false">تيك توك</button>
+<section id="auth">
+  <div class="card">
+    <div class="brand"><span class="dots"><i></i><i></i></span>توأم</div>
+    <div style="color:var(--mute)">ChatGPT وGemini في دردشة وحدة، وذاكرة تكبر معك.</div>
+    <div class="tabs" role="tablist"><button id="tL" aria-selected="true">دخول</button><button id="tR" aria-selected="false">حساب جديد</button></div>
+    <div class="fld"><label for="un">اسم المستخدم</label><input type="text" id="un" dir="ltr" autocomplete="username" maxlength="20"></div>
+    <div class="fld"><label for="pw">كلمة المرور</label><input type="password" id="pw" dir="ltr" autocomplete="current-password"><div class="meter hide" id="mt"><b></b></div></div>
+    <div class="fld hide" id="pw2w"><label for="pw2">تأكيد كلمة المرور</label><input type="password" id="pw2" dir="ltr" autocomplete="new-password"></div>
+    <div class="msg" id="amsg" role="alert"></div>
+    <button class="btn pri" id="abtn" style="width:100%;padding:12px">دخول</button>
+    <p class="fine">الحسابات محلية داخل متصفحك: بياناتك ومفاتيحك مشفرة بـ AES-256 من كلمة مرورك ولا تروح لأي سيرفر. إذا نسيت كلمة المرور ما فيه استرجاع.</p>
   </div>
+</section>
 
-  <div class="row">
-    <select id="len" aria-label="طول اليوزر">
-      <option value="0">أي طول</option><option>4</option><option>5</option><option>6</option><option>7</option>
-    </select>
-    <button class="go" id="go">بحث</button>
-    <button class="gear" id="gear" aria-label="الإعدادات">⚙ الإعدادات</button>
-  </div>
-  <p class="note" id="note"></p>
-  <ul id="out"></ul>
-  <p class="stat" id="stat"></p>
-</main>
-<dialog id="dlg">
-  <h2 style="margin:0 0 4px">الإعدادات</h2>
-  <p style="margin:0;color:var(--mute);font-size:.9rem">اختر كيف يشتغل الموقع.</p>
-  <label for="api">رابط الخادم (الباك اند)</label>
-  <input type="text" id="api" placeholder="https://your-app.onrender.com">
-  <label class="chk"><input type="checkbox" id="local"> <span>أسمح للموقع يشتغل بدون خادم (وضع محلي): يولّد يوزرات في متصفحي وأفحصها يدويا بنفسي. غير مؤكدة.</span></label>
-  <label class="chk"><input type="checkbox" id="auto"> <span>أسمح بالتحويل التلقائي للوضع المحلي إذا الخادم ما رد.</span></label>
-  <div class="acts"><button id="cancel">إلغاء</button><button class="save" id="save">حفظ</button></div>
+<section id="app" class="hide">
+  <aside id="side">
+    <header><div class="brand" style="font-size:1.3rem"><span class="dots"><i></i><i></i></span>توأم</div><button class="btn pri" id="newc">+ محادثة جديدة</button></header>
+    <div id="list"></div>
+    <footer><button class="btn" id="memB">🧠 الذاكرة (<span id="memN">0</span>)</button><button class="btn" id="setB">⚙ الإعدادات</button><button class="btn" id="out">خروج (<span id="who"></span>)</button></footer>
+  </aside>
+  <main>
+    <div class="top">
+      <button class="btn" id="menu" aria-label="القائمة">☰</button>
+      <select id="mode" aria-label="الوضع">
+        <option value="merge">دمج الاثنين (الأقوى)</option><option value="both">الاثنين جنب بعض</option><option value="gpt">ChatGPT فقط</option><option value="gemini">Gemini فقط</option>
+      </select><span class="sp"></span>
+    </div>
+    <div id="msgs"></div>
+    <div class="bar">
+      <div class="opts"><label><input type="checkbox" id="oSearch"> بحث حي بالإنترنت (Gemini)</label><label><input type="checkbox" id="oMem"> تعلّم من المحادثات</label></div>
+      <div><textarea id="inp" rows="1" placeholder="اكتب رسالتك... (Enter للإرسال)"></textarea><button class="btn pri" id="send">إرسال</button></div>
+    </div>
+  </main>
+</section>
+
+<dialog id="dSet">
+  <h3>الإعدادات</h3>
+  <div class="fld"><label for="kO">مفتاح OpenAI</label><input type="password" id="kO" dir="ltr" placeholder="sk-..." autocomplete="off"></div>
+  <div class="fld"><label for="kG">مفتاح Gemini</label><input type="password" id="kG" dir="ltr" placeholder="AIza..." autocomplete="off"></div>
+  <div class="fld"><label for="mO">موديل OpenAI</label><input type="text" id="mO" dir="ltr"></div>
+  <div class="fld"><label for="mG">موديل Gemini</label><input type="text" id="mG" dir="ltr"></div>
+  <div class="fld"><label for="sys">تعليمات الشخصية (System Prompt)</label><textarea id="sys" rows="3"></textarea></div>
+  <p class="fine">المفاتيح تنحفظ مشفرة بحسابك فقط. حط حد صرف على المفاتيح من لوحة المزود. اسم الموديل تقدر تغيره لأي موديل متاح عندك.</p>
+  <div class="acts"><button class="btn pri" id="sSave">حفظ</button><button class="btn" id="sClose">إغلاق</button><button class="btn dng" id="delAcc" style="margin-inline-start:auto">حذف الحساب</button></div>
 </dialog>
+<dialog id="dMem">
+  <h3>ذاكرة توأم</h3>
+  <p class="fine" style="margin-top:0">حقائق وتفضيلات استخلصها من محادثاتك وتنضاف لكل رد جديد. تقدر تحذف أي شي.</p>
+  <div id="memL"></div>
+  <div class="acts"><button class="btn" id="mClose">إغلاق</button><button class="btn dng" id="mClear">مسح الكل</button></div>
+</dialog>
+
 <script>
-const $=s=>document.querySelector(s);
-let platform='roblox';
-const cfg=Object.assign({api:'',local:false,auto:false},JSON.parse(localStorage.getItem('hh_cfg')||'{}'));
-const notes={roblox:'',discord:'ديسكورد ما يوفر فحص عام: اليوزرات غير مؤكدة، جرّبها يدويا.',instagram:'الفحص تقريبي: تأكد قبل التسجيل.',tiktok:'الفحص تقريبي: تأكد قبل التسجيل.'};
-const links={roblox:n=>`https://www.roblox.com/search/users?keyword=${n}`,tiktok:n=>`https://www.tiktok.com/@${n}`,instagram:n=>`https://www.instagram.com/${n}/`,discord:null};
+'use strict';
+const $=s=>document.querySelector(s),enc=new TextEncoder(),dec=new TextDecoder();
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function b64(u){let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)}
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+function md(t){return String(t).split('```').map((p,i)=>i%2?`<pre><code>${esc(p.replace(/^[\w-]*\n/,''))}</code></pre>`:esc(p).replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')).join('')}
 
-// مولد محلي (للوضع بدون خادم)
-const C='bcdfghjklmnprstvwxyz',V='aeiou',W=['nova','zero','void','flux','neon','ghost','storm','blaze','pixel','echo','onyx','rift','apex','volt','lynx','hex'];
-const rnd=a=>a[Math.floor(Math.random()*a.length)];
-function gen(len){const t=Math.random();
-  if(t<.25)return(rnd(W)+rnd(W)).slice(0,Math.max(len,5));
-  if(t<.4){const al='abcdefghijklmnopqrstuvwxyz0123456789';let s=rnd(C);while(s.length<len)s+=rnd(al);return s}
-  let s='';while(s.length<len)s+=s.length%2?rnd(V):rnd(C);return s}
-function localSearch(len){const out=new Set();while(out.size<10)out.add(gen(len||4+Math.floor(Math.random()*3)));
-  return{results:[...out].map(name=>({name,verified:false})),remaining:null,local:true}}
-
-$('#plats').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;
-  platform=b.dataset.p;
-  document.querySelectorAll('#plats button').forEach(x=>x.setAttribute('aria-pressed',x===b));
-  $('#note').textContent=notes[platform];$('#out').innerHTML='';
-});
-
-// الإعدادات
-$('#gear').onclick=()=>{$('#api').value=cfg.api;$('#local').checked=cfg.local;$('#auto').checked=cfg.auto;$('#dlg').showModal()};
-$('#cancel').onclick=()=>$('#dlg').close();
-$('#save').onclick=()=>{
-  cfg.api=$('#api').value.trim().replace(/\/+$/,'');cfg.local=$('#local').checked;cfg.auto=$('#auto').checked;
-  localStorage.setItem('hh_cfg',JSON.stringify(cfg));$('#dlg').close();$('#note').textContent='تم حفظ الإعدادات.';
-};
-
-function render(j){
-  const ul=$('#out');ul.innerHTML='';
-  if(!j.results.length){ul.innerHTML='<p class="empty">المخزون فاضي حاليا، النظام يصيد. جرّب بعد ثواني.</p>';return}
-  j.results.forEach(x=>{
-    const li=document.createElement('li');
-    const l=!x.verified&&links[platform]?`<a class="chk-link" target="_blank" rel="noopener" href="${links[platform](x.name)}">تحقق</a>`:'';
-    li.innerHTML=`<span><code>${x.name}</code>${l}</span><button>نسخ</button>`;
-    const b=li.querySelector('button');
-    b.onclick=()=>{navigator.clipboard.writeText(x.name);b.textContent='تم النسخ';b.classList.add('done')};
-    ul.appendChild(li);
-  });
-  $('#stat').textContent=j.local?'وضع محلي: اليوزرات غير مؤكدة، افحصها بنفسك بزر "تحقق".':`المتبقي جاهز في المخزون: ${j.remaining}`;
+/* ===== التشفير والحسابات ===== */
+const ITER=310000;
+async function derive(pw,salt){
+  const k=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
+  const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:ITER,hash:'SHA-256'},k,512));
+  return{auth:b64(bits.slice(0,32)),key:await crypto.subtle.importKey('raw',bits.slice(32),'AES-GCM',false,['encrypt','decrypt'])};
 }
+async function seal(key,o){const iv=crypto.getRandomValues(new Uint8Array(12));return{iv:b64(iv),ct:b64(new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(JSON.stringify(o)))))}}
+async function unseal(key,b){return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(b.iv)},key,unb64(b.ct))))}
+const users=()=>{try{return JSON.parse(localStorage.getItem('tawam_users')||'{}')}catch{return{}}};
+const saveUsers=u=>localStorage.setItem('tawam_users',JSON.stringify(u));
+const same=(a,b)=>{if(a.length!==b.length)return false;let r=0;for(let i=0;i<a.length;i++)r|=a.charCodeAt(i)^b.charCodeAt(i);return r===0};
+const defaults=()=>({keys:{openai:'',gemini:''},cfg:{openaiModel:'gpt-4o-mini',geminiModel:'gemini-2.5-flash',system:'أنت مساعد ذكي ودود ودقيق. جاوب بلغة المستخدم وبإيجاز مفيد، وإذا مو متأكد قل ذلك.',mode:'merge',search:false,memory:true},chats:[],memory:[]});
+let S=null,cur=null,busy=false,saveT,idleT,regMode=false;
 
-$('#go').onclick=async()=>{
-  const btn=$('#go'),len=$('#len').value;btn.disabled=true;btn.textContent='جاري البحث...';
+function strength(p){let s=0;if(p.length>=10)s++;if(p.length>=14)s++;if(/[a-z]/.test(p)&&/[A-Z]/.test(p))s++;if(/\d/.test(p))s++;if(/[^\w\s]/.test(p))s++;return s}
+function setTab(r){regMode=r;$('#tL').setAttribute('aria-selected',!r);$('#tR').setAttribute('aria-selected',r);$('#pw2w').classList.toggle('hide',!r);$('#mt').classList.toggle('hide',!r);$('#abtn').textContent=r?'إنشاء الحساب':'دخول';$('#pw').autocomplete=r?'new-password':'current-password';$('#amsg').textContent=''}
+$('#tL').onclick=()=>setTab(false);$('#tR').onclick=()=>setTab(true);
+$('#pw').oninput=()=>{const s=strength($('#pw').value),b=$('#mt b');b.style.width=s*20+'%';b.style.background=['#ff6b6b','#ff6b6b','#f2c14e','#9bd45b','#2dd4a7','#2dd4a7'][s]};
+
+async function authGo(){
+  const msg=t=>$('#amsg').textContent=t,name=$('#un').value.trim().toLowerCase(),pw=$('#pw').value,all=users();
+  if(!/^[a-z0-9_]{3,20}$/.test(name))return msg('اسم المستخدم: 3-20 حرف إنجليزي أو رقم أو _');
+  $('#abtn').disabled=true;
   try{
-    if(!cfg.api){
-      if(cfg.local){render(localSearch(+len));return}
-      $('#out').innerHTML='<p class="empty">ما حددت رابط الخادم. افتح ⚙ الإعدادات وحط الرابط، أو فعّل الوضع المحلي.</p>';return}
-    try{
-      const r=await fetch(`${cfg.api}/api/search?platform=${platform}&length=${len}&count=10`);
-      const j=await r.json();
-      if(j.error){$('#out').innerHTML=`<p class="empty">${j.error}</p>`;return}
-      render(j);
-    }catch(err){
-      if(cfg.auto){render(localSearch(+len));$('#note').textContent='الخادم ما رد: تحوّلت للوضع المحلي.'}
-      else $('#out').innerHTML='<p class="empty">تعذر الاتصال بالخادم. تأكد من الرابط بالإعدادات وأن الخادم شغال، أو فعّل الوضع المحلي.</p>';
+    if(regMode){
+      if(all[name])return msg('اسم المستخدم محجوز');
+      if(strength(pw)<3||pw.length<10)return msg('كلمة المرور ضعيفة: 10 أحرف على الأقل مع حروف كبيرة وصغيرة وأرقام أو رموز');
+      if(pw!==$('#pw2').value)return msg('كلمتا المرور غير متطابقتين');
+      msg('جاري إنشاء الحساب...');
+      const salt=crypto.getRandomValues(new Uint8Array(16)),d=await derive(pw,salt),data=defaults();
+      all[name]={salt:b64(salt),auth:d.auth,vault:await seal(d.key,data),fails:0,until:0};saveUsers(all);
+      return start(name,d.key,data);
     }
-  }finally{btn.disabled=false;btn.textContent='بحث'}
-};
+    const u=all[name];
+    if(u&&u.until>Date.now())return msg(`محاولات كثيرة. انتظر ${Math.ceil((u.until-Date.now())/1000)} ثانية`);
+    msg('جاري التحقق...');
+    const d=await derive(pw,u?unb64(u.salt):crypto.getRandomValues(new Uint8Array(16)));
+    if(!u||!same(d.auth,u.auth)){
+      if(u){u.fails=(u.fails||0)+1;if(u.fails>=5)u.until=Date.now()+Math.min(30000*2**(u.fails-5),900000);saveUsers(all)}
+      return msg('اسم المستخدم أو كلمة المرور غلط');
+    }
+    u.fails=0;u.until=0;saveUsers(all);
+    start(name,d.key,await unseal(d.key,u.vault));
+  }catch(e){msg('صار خطأ: '+e.message)}finally{$('#abtn').disabled=false}
+}
+$('#abtn').onclick=authGo;
+['#un','#pw','#pw2'].forEach(s=>$(s).addEventListener('keydown',e=>{if(e.key==='Enter')authGo()}));
+
+function start(name,key,data){
+  S={name,key,data};const d=S.data;d.cfg=Object.assign(defaults().cfg,d.cfg);
+  $('#pw').value=$('#pw2').value='';$('#amsg').textContent='';
+  $('#auth').classList.add('hide');$('#app').classList.remove('hide');$('#who').textContent=name;
+  $('#mode').value=d.cfg.mode;$('#oSearch').checked=d.cfg.search;$('#oMem').checked=d.cfg.memory;
+  cur=d.chats[0]?.id||null;drawList();drawMsgs();drawMemN();idleReset();
+}
+function logout(){S=null;cur=null;clearTimeout(idleT);$('#app').classList.add('hide');$('#auth').classList.remove('hide');$('#msgs').innerHTML='';$('#list').innerHTML='';document.querySelectorAll('dialog[open]').forEach(d=>d.close())}
+$('#out').onclick=logout;
+function idleReset(){clearTimeout(idleT);if(S)idleT=setTimeout(()=>{logout();$('#amsg').textContent='انقفل حسابك بعد 15 دقيقة خمول'},15*60000)}
+['pointerdown','keydown'].forEach(e=>addEventListener(e,idleReset));
+function persist(){clearTimeout(saveT);saveT=setTimeout(async()=>{if(!S)return;const all=users();if(all[S.name]){all[S.name].vault=await seal(S.key,S.data);saveUsers(all)}},400)}
+
+/* ===== استدعاء النماذج ===== */
+async function askGPT(h,sys){
+  const k=S.data.keys.openai;if(!k)throw Error('ما حطيت مفتاح OpenAI بالإعدادات');
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',signal:AbortSignal.timeout(90000),headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},body:JSON.stringify({model:S.data.cfg.openaiModel,messages:[{role:'system',content:sys},...h]})});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error?.message||'خطأ '+r.status);return j.choices?.[0]?.message?.content||'(رد فاضي)';
+}
+async function askGem(h,sys,search){
+  const k=S.data.keys.gemini;if(!k)throw Error('ما حطيت مفتاح Gemini بالإعدادات');
+  const body={systemInstruction:{parts:[{text:sys}]},contents:h.map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content}]}))};
+  if(search)body.tools=[{google_search:{}}];
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(S.data.cfg.geminiModel)}:generateContent`,{method:'POST',signal:AbortSignal.timeout(90000),headers:{'Content-Type':'application/json','x-goog-api-key':k},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error?.message||'خطأ '+r.status);
+  return (j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')||'(رد فاضي)';
+}
+const today=()=>new Date().toLocaleDateString('ar',{dateStyle:'full'});
+function system(){const m=S.data.memory.slice(-60).map(x=>'- '+x.t).join('\n');return S.data.cfg.system+`\nتاريخ اليوم: ${today()}.`+(S.data.cfg.memory&&m?`\n\nذاكرتك عن المستخدم والعالم (من محادثات سابقة، استخدمها عند الحاجة بدون ذكرها حرفيا):\n${m}`:'')}
+
+/* ===== الدردشة ===== */
+const chatOf=id=>S.data.chats.find(c=>c.id===id);
+function newChat(){const c={id:crypto.randomUUID(),title:'محادثة جديدة',msgs:[]};S.data.chats.unshift(c);cur=c.id;drawList();drawMsgs();persist();$('#side').classList.remove('open');$('#inp').focus()}
+$('#newc').onclick=newChat;$('#menu').onclick=()=>$('#side').classList.toggle('open');
+function drawList(){const l=$('#list');l.innerHTML='';S.data.chats.forEach(c=>{const d=document.createElement('div');d.className='ci'+(c.id===cur?' on':'');d.innerHTML=`<span>${esc(c.title)}</span><button aria-label="حذف">✕</button>`;d.onclick=()=>{cur=c.id;drawList();drawMsgs();$('#side').classList.remove('open')};d.querySelector('button').onclick=e=>{e.stopPropagation();if(!confirm('حذف المحادثة؟'))return;S.data.chats=S.data.chats.filter(x=>x.id!==c.id);if(cur===c.id)cur=S.data.chats[0]?.id||null;drawList();drawMsgs();persist()};l.appendChild(d)})}
+const NAME={gpt:'ChatGPT',gem:'Gemini'},COL={gpt:'var(--gpt)',gem:'var(--gem)'};
+const block=a=>`<div class="a" style="--c:${COL[a.src]}"><div class="who">${NAME[a.src]}</div>${a.err?`<div class="err">${esc(a.text)}</div>`:md(a.text)}</div>`;
+function drawMsgs(){
+  const box=$('#msgs'),c=cur&&chatOf(cur);box.innerHTML='';
+  if(!c||!c.msgs.length){box.innerHTML='<div class="empty"><h2>اسأل أي شي</h2><p>بوضع الدمج يجاوبك ChatGPT وGemini، وبعدها يطلع لك أفضل جواب من الاثنين. حط مفاتيحك من ⚙ الإعدادات أول.</p></div>';return}
+  c.msgs.forEach(m=>{const r=document.createElement('div');r.className='row';
+    if(m.role==='user')r.innerHTML=`<div class="u">${md(m.content)}</div>`;
+    else if(m.merged)r.innerHTML=`<div class="a" style="--c:var(--mrg)"><div class="who">الجواب المدمج</div>${md(m.content)}</div><details><summary>شوف جواب كل نموذج</summary><div class="cols" style="margin-top:8px">${m.alts.map(block).join('')}</div></details>`;
+    else if(m.alts.length>1)r.innerHTML=`<div class="cols">${m.alts.map(block).join('')}</div>`;
+    else r.innerHTML=block(m.alts[0]);
+    box.appendChild(r)});
+  box.scrollTop=box.scrollHeight;
+}
+async function send(){
+  if(busy||!S)return;const inp=$('#inp'),txt=inp.value.trim();if(!txt)return;
+  if(!cur)newChat();const c=chatOf(cur);
+  c.msgs.push({role:'user',content:txt});if(c.msgs.length===1)c.title=txt.slice(0,40);
+  inp.value='';inp.style.height='auto';busy=true;$('#send').disabled=true;drawList();drawMsgs();
+  const tmp=document.createElement('div');tmp.className='row';tmp.innerHTML='<div class="a"><div class="who" style="color:var(--mute)">يفكر...</div></div>';$('#msgs').appendChild(tmp);$('#msgs').scrollTop=1e9;
+  const mode=S.data.cfg.mode,h=c.msgs.map(m=>({role:m.role,content:m.content})),sys=system(),srch=S.data.cfg.search;
+  const jobs=[];if(mode!=='gemini')jobs.push(['gpt',askGPT(h,sys)]);if(mode!=='gpt')jobs.push(['gem',askGem(h,sys,srch)]);
+  const rs=await Promise.allSettled(jobs.map(j=>j[1]));
+  const alts=rs.map((r,i)=>({src:jobs[i][0],text:r.status==='fulfilled'?r.value:r.reason.message,err:r.status==='rejected'}));
+  const ok=alts.filter(a=>!a.err);let content=null,merged=false;
+  if(mode==='merge'&&ok.length===2){
+    try{const p=`سؤال المستخدم:\n${txt}\n\nجواب ChatGPT:\n${ok[0].text}\n\nجواب Gemini:\n${ok[1].text}\n\nادمج الجوابين بجواب واحد هو الأدق والأكمل. أصلح أي تعارض، واذكر بإيجاز نقاط الخلاف الحقيقية إن وجدت. لا تذكر أنك تدمج. جاوب بلغة المستخدم.`;
+      content=await askGem([{role:'user',content:p}],'أنت محرر خبير يدمج إجابات نماذج ذكاء اصطناعي.',false);merged=true}catch{content=null}
+  }
+  if(!content)content=ok.length?ok.map(a=>(ok.length>1?`[${NAME[a.src]}] `:'')+a.text).join('\n\n'):'تعذر الحصول على رد. شوف الأخطاء بالأعلى.';
+  c.msgs.push({role:'assistant',content,alts,merged});busy=false;$('#send').disabled=false;drawMsgs();persist();
+  if(ok.length)learn(txt,content);
+}
+$('#send').onclick=send;
+$('#inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+$('#inp').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px'});
+$('#mode').onchange=e=>{S.data.cfg.mode=e.target.value;persist()};
+$('#oSearch').onchange=e=>{S.data.cfg.search=e.target.checked;persist()};
+$('#oMem').onchange=e=>{S.data.cfg.memory=e.target.checked;persist()};
+
+/* ===== الذاكرة: التعلم من المحادثات ===== */
+async function learn(q,a){
+  if(!S||!S.data.cfg.memory)return;const K=S.data.keys;if(!K.gemini&&!K.openai)return;
+  const p=`من هذا التبادل، استخرج حقائق ثابتة ومفيدة للمستقبل: تفضيلات المستخدم ومعلومات عنه أو عن اهتماماته، أو حقائق عن العالم أو تصحيحات مهمة. تجاهل الكلام العابر. أعد JSON فقط: مصفوفة نصوص عربية قصيرة (3 كحد أقصى)، أو [] إذا ما فيه شي يستحق.\n\nالمستخدم: ${q.slice(0,1500)}\nالمساعد: ${a.slice(0,2000)}`;
+  const sys='أنت مستخرج حقائق دقيق. ترد بـ JSON فقط.';
+  try{
+    const out=K.gemini?await askGem([{role:'user',content:p}],sys,false):await askGPT([{role:'user',content:p}],sys);
+    if(!S)return;
+    const arr=JSON.parse((out.match(/\[[\s\S]*\]/)||['[]'])[0]);
+    arr.filter(x=>typeof x==='string'&&x.length>3&&x.length<300).slice(0,3).forEach(t=>{if(!S.data.memory.some(m=>m.t.toLowerCase()===t.toLowerCase()))S.data.memory.push({t,ts:Date.now()})});
+    if(S.data.memory.length>150)S.data.memory=S.data.memory.slice(-150);
+    drawMemN();persist();
+  }catch{}
+}
+const drawMemN=()=>$('#memN').textContent=S.data.memory.length;
+function drawMemL(){const l=$('#memL');l.innerHTML=S.data.memory.length?'':'<p class="fine">ما تعلمت شي بعد. سولف معاه وبيبدأ يحفظ.</p>';S.data.memory.forEach((m,i)=>{const d=document.createElement('div');d.className='mem';d.innerHTML=`<span>${esc(m.t)}</span><button aria-label="حذف">✕</button>`;d.querySelector('button').onclick=()=>{S.data.memory.splice(i,1);drawMemL();drawMemN();persist()};l.appendChild(d)})}
+$('#memB').onclick=()=>{drawMemL();$('#dMem').showModal()};$('#mClose').onclick=()=>$('#dMem').close();
+$('#mClear').onclick=()=>{if(confirm('مسح كل الذاكرة؟')){S.data.memory=[];drawMemL();drawMemN();persist()}};
+
+/* ===== الإعدادات ===== */
+$('#setB').onclick=()=>{const d=S.data;$('#kO').value=d.keys.openai;$('#kG').value=d.keys.gemini;$('#mO').value=d.cfg.openaiModel;$('#mG').value=d.cfg.geminiModel;$('#sys').value=d.cfg.system;$('#dSet').showModal()};
+$('#sClose').onclick=()=>$('#dSet').close();
+$('#sSave').onclick=()=>{const d=S.data;d.keys.openai=$('#kO').value.trim();d.keys.gemini=$('#kG').value.trim();d.cfg.openaiModel=$('#mO').value.trim()||'gpt-4o-mini';d.cfg.geminiModel=$('#mG').value.trim()||'gemini-2.5-flash';d.cfg.system=$('#sys').value.trim();persist();$('#dSet').close()};
+$('#delAcc').onclick=()=>{if(!confirm('حذف الحساب وكل بياناته نهائيا؟'))return;const a=users();delete a[S.name];saveUsers(a);logout()};
 </script>
 </body>
 </html>
