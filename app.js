@@ -388,6 +388,14 @@ async function flushPending(){
     busy=false;resumeStudy();$('#send').disabled=false;if(c.id===cur)drawMsgs();persist();
   }
 }
+function cloudWhy(e){
+  const m=String((e&&e.message)||e);
+  if(/key missing/i.test(m))return'مفتاح GEMINI_API_KEY ما انحط كـ Secret داخل الـ Worker.';
+  if(/Forbidden/i.test(m))return'ALLOWED_ORIGIN بالـ Worker غلط: لازم يطابق رابط موقعك بالضبط (مثل https://اسمك.github.io بدون / بالأخير).';
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m))return'ما قدرت أوصل للـ Worker. تأكد إن الرابط بـ config.js صحيح والـ Worker منشور، وإن ALLOWED_ORIGIN يطابق رابط موقعك بالضبط.';
+  if(/Too many/i.test(m))return'طلبات كثيرة، انتظر كم دقيقة.';
+  return'خطأ من الخدمة السحابية: '+m;
+}
 async function cloudAsk(hm,txt,ctx,tools,bad,search,onChunk){
   const cf=S.data.cfg,hist=hm.filter(m=>!m.err).slice(-8).map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.content.slice(0,1500)}]}));
   let u=txt;if(tools.length||ctx)u=`${txt}\n\n---\n${tools.length?'TOOL RESULTS (trusted):\n'+tools.join('\n')+'\n\n':''}${ctx?'REFERENCE (my own studied notes; use only if relevant):\n'+ctx:''}`;
@@ -423,14 +431,14 @@ async function send(){
   const body=row.querySelector('.bd'),tools=[],cl=calc(txt);
   if(cl)tools.push('Calculator: '+cl);
   if(TIMEQ.test(norm(txt)))tools.push('Current local date and time: '+new Date().toLocaleString('en-GB',{dateStyle:'full',timeStyle:'short'})+' ('+Intl.DateTimeFormat().resolvedOptions().timeZone+')');
-  let g={ctx:'',sources:[],docs:[]},out='',err=false,used=false;
+  let g={ctx:'',sources:[],docs:[]},out='',err=false,used=false,cloudErr=null;
   const pl=tools.length?null:plan(txt);
   if(PROXY){
     try{
       const kb=pl&&pl.wiki?kbSearch(txt,3).filter(d=>relevant(txt,d)):[],ctx=kb.map((d,i)=>`[${i+1}] ${d.title}: ${d.text.slice(0,500)}`).join('\n\n');
       const r=await cloudAsk(c.msgs.slice(0,-1),txt,ctx,tools,bad,!!pl||cf.skill==='research',t=>{body.innerHTML=md(t);box.scrollTop=1e9});
       out=r.text;g.sources=r.sources;used=true;
-    }catch(e){console.warn('cloud',e);if(hasGPU()&&!engine)startLoad()}
+    }catch(e){console.warn('cloud',e);cloudErr=e;if(hasGPU()&&!engine)startLoad()}
   }
   if(!used){
     if(pl){try{g=await withTimeout(pre.t===txt&&pre.p?pre.p.catch(()=>gather(txt,pl)):gather(txt,pl),5000,'t')}catch{}
@@ -443,7 +451,7 @@ async function send(){
       const m=er.message;
       if(['NOGPU','ENGWAIT','STALL'].includes(m)){
         const tl=tools.filter(t=>!t.startsWith('NOTE:')).map(t=>'• '+t),docs=g.docs.slice(0,2).map(d=>`**${d.title}**\n${d.text.slice(0,420)}`);
-        out=[...tl,...docs].join('\n\n')||(m==='NOGPU'?'ما أقدر أجاوب على هذا بمتصفحك الحالي: الذكاء المحلي يحتاج WebGPU (Chrome أو Edge حديث على كمبيوتر).':'الذكاء المحلي لسه ما جهز على جهازك (التحميل بطيء أو واقف). حدّث الصفحة وجرّب بعد شوي. وإذا تكررت المشكلة فجهازك ما يناسب الذكاء المحلي، والحل الأفضل تفعيل الربط السحابي (PROXY).');
+        out=[...tl,...docs].join('\n\n')||(m==='NOGPU'?'ما أقدر أجاوب على هذا بمتصفحك الحالي: الذكاء المحلي يحتاج WebGPU (Chrome أو Edge حديث على كمبيوتر).':(cloudErr?'الربط السحابي ما اشتغل: '+cloudWhy(cloudErr):'الذكاء المحلي ما جهز على جهازك (التحميل بطيء أو واقف). الحل الأفضل: فعّل الربط السحابي بحط رابط الـ Worker في ملف config.js.'));
       }else{err=true;out='صار خطأ: '+friendly(er)+'\nجرّب مرة ثانية.'}
     }
   }
